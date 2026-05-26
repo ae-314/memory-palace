@@ -176,6 +176,21 @@ DECO_SPRITES = [
     "t_14_5", "t_8_7",  "t_15_7", "t_13_7",
 ]
 
+# 4-sprite sets for room corners (TL, TR, BL, BR) — indexed by room name hash
+DECO_SETS = [
+    ["chest",    "shelf",     "barrel",   "pillar"],
+    ["crate",    "cabinet",   "vase",     "cauldron"],
+    ["safe",     "lockbox",   "pillar",   "vase"],
+    ["barrel",   "chest",     "shelf",    "cauldron"],
+    ["cabinet",  "crate",     "vase",     "pillar"],
+    ["shelf",    "safe",      "cauldron", "chest"],
+    ["vase",     "barrel",    "crate",    "shelf"],
+    ["cauldron", "pillar",    "safe",     "cabinet"],
+]
+
+_ROOMS_PW  = 182   # left panel width in RoomsScreen
+_ROOMS_CH  = 38    # height of each room card in the left panel
+
 
 # ---------------------------------------------------------------------------
 # Top-down room renderer  (Stardew Valley-inspired 3/4 perspective)
@@ -551,6 +566,7 @@ class HomeScreen(Screen):
     MENU = [
         ("NEW GAME",   "new_game"),
         ("CONTINUE",   "continue"),
+        ("MY ROOMS",   "rooms"),
         ("FLASHCARDS", "flashcard"),
         ("QUIT",       "quit"),
     ]
@@ -852,6 +868,205 @@ class PalaceScreen(Screen):
         text(surface, "ARROWS MOVE  ENTER INSPECT  ESC HOME",
              MX, INTERNAL_H - 10, FONT_SM - 2, GRAY, "center")
         draw_scanlines(surface)
+
+
+# ---------------------------------------------------------------------------
+# Rooms Browser  (two-panel: room list left | full room detail right)
+# ---------------------------------------------------------------------------
+
+class RoomsScreen(Screen):
+    """Left panel = scrollable room list. Right panel = full decorated room."""
+
+    def __init__(self, game, room_idx=0):
+        super().__init__(game)
+        n = len(game.palace.rooms)
+        self.room_idx = max(0, min(room_idx, n - 1)) if n else 0
+        self.cont_idx = 0
+        self.scroll   = 0
+
+    # ---- navigation ----
+
+    def update(self, events):
+        rooms  = self.game.palace.rooms
+        n      = len(rooms)
+        for e in events:
+            if e.type == pygame.KEYDOWN:
+                if e.key == pygame.K_ESCAPE:
+                    return {"action": "home"}
+                elif e.key in (pygame.K_UP, pygame.K_w):
+                    if n:
+                        self.room_idx = (self.room_idx - 1) % n
+                        self.cont_idx = 0
+                        self._fix_scroll(n)
+                elif e.key in (pygame.K_DOWN, pygame.K_s):
+                    if n:
+                        self.room_idx = (self.room_idx + 1) % n
+                        self.cont_idx = 0
+                        self._fix_scroll(n)
+                elif e.key == pygame.K_LEFT:
+                    if n and rooms[self.room_idx].containers:
+                        nc = len(rooms[self.room_idx].containers)
+                        self.cont_idx = (self.cont_idx - 1) % nc
+                elif e.key == pygame.K_RIGHT:
+                    if n and rooms[self.room_idx].containers:
+                        nc = len(rooms[self.room_idx].containers)
+                        self.cont_idx = (self.cont_idx + 1) % nc
+        return None
+
+    def _fix_scroll(self, n):
+        vis = max(1, (INTERNAL_H - 20) // _ROOMS_CH)
+        self.scroll = max(0, min(self.scroll, n - vis))
+        if self.room_idx < self.scroll:
+            self.scroll = self.room_idx
+        elif self.room_idx >= self.scroll + vis:
+            self.scroll = self.room_idx - vis + 1
+
+    # ---- drawing ----
+
+    def draw(self, surface):
+        draw_bg(surface)
+        t = get_t()
+        rooms = self.game.palace.rooms
+
+        if not rooms:
+            text(surface, "NO ROOMS YET", MX, MY - 10, FONT_MD, GOLD, "center")
+            text(surface, "ADD AN ELEMENT FIRST THEN COME BACK",
+                 MX, MY + 20, FONT_SM, GRAY, "center")
+            text(surface, "ESC = HOME", MX, INTERNAL_H - 14, FONT_SM, GRAY, "center")
+            draw_scanlines(surface)
+            return
+
+        self._draw_left(surface, rooms, t)
+        self._draw_right(surface, rooms, t)
+        draw_scanlines(surface)
+
+    # ---- left panel: room list ----
+
+    def _draw_left(self, surface, rooms, t):
+        pygame.draw.rect(surface, PANEL_BG, (0, 0, _ROOMS_PW, INTERNAL_H))
+        pygame.draw.line(surface, GRAY, (_ROOMS_PW, 0), (_ROOMS_PW, INTERNAL_H), 1)
+        tc = lerp_color(GOLD, TEAL, (math.sin(t * 1.4) + 1) / 2)
+        text(surface, "MY ROOMS", _ROOMS_PW // 2, 6, FONT_SM, tc, "center")
+
+        vis = max(1, (INTERNAL_H - 22) // _ROOMS_CH)
+        for slot in range(vis):
+            i = self.scroll + slot
+            if i >= len(rooms):
+                break
+            room = rooms[i]
+            sel  = (i == self.room_idx)
+            ry   = 20 + slot * _ROOMS_CH
+            rc   = room_color(room.name)
+            bg   = lerp_color(rc, BG, 0.60) if sel else lerp_color(rc, BG, 0.84)
+            pygame.draw.rect(surface, bg, (3, ry, _ROOMS_PW - 6, _ROOMS_CH - 3),
+                             border_radius=3)
+            bw   = 2 if sel else 1
+            bc   = lerp_color(GOLD, WHITE, (math.sin(t * 5) + 1) / 2) if sel \
+                   else lerp_color(rc, BG, 0.35)
+            pygame.draw.rect(surface, bc, (3, ry, _ROOMS_PW - 6, _ROOMS_CH - 3),
+                             bw, border_radius=3)
+            # Room name
+            nc_col = GOLD if sel else lerp_color(rc, WHITE, 0.80)
+            text(surface, room.name.upper()[:16], 8, ry + 5,
+                 max(6, FONT_SM - 2), nc_col)
+            # Tiny container sprites (up to 4)
+            for j, cont in enumerate(room.containers[:4]):
+                draw_sprite(surface, cont.shape,
+                            lerp_color(rc, WHITE, 0.55),
+                            10 + j * 16, ry + _ROOMS_CH - 10, 11)
+            # Count
+            nc = len(room.containers)
+            if nc:
+                text(surface, str(nc), _ROOMS_PW - 8, ry + 5,
+                     max(5, FONT_SM - 3), GRAY, "topright")
+
+    # ---- right panel: full decorated room ----
+
+    def _draw_right(self, surface, rooms, t):
+        if self.room_idx >= len(rooms):
+            return
+        room = rooms[self.room_idx]
+        rc   = room_color(room.name)
+
+        # Room bounds — fills the right side with a thin margin
+        rx = _ROOMS_PW + 4
+        ry = 4
+        rw = INTERNAL_W - rx - 4
+        rh = INTERNAL_H - 8 - 20       # 20px hint strip at bottom
+
+        ix, iy, iw, ih = draw_topdown_room(
+            surface, rx, ry, rw, rh, rc, room.name, t, highlighted=False)
+
+        # 4 ambient furniture sprites at room corners
+        self._draw_corner_decos(surface, room.name, rc, ix, iy, iw, ih)
+
+        # Containers (in the centre, clear of corner decos)
+        if room.containers and iw > 40 and ih > 40:
+            self._draw_containers(surface, room, rc, ix, iy, iw, ih, t)
+        elif not room.containers:
+            text(surface, "EMPTY ROOM", rx + rw // 2, iy + ih // 2,
+                 FONT_SM, lerp_color(rc, BG, 0.40), "center")
+
+        # Hint strip
+        text(surface,
+             "W / S  ROOM     < >  CONTAINER     ESC  HOME",
+             rx + rw // 2, INTERNAL_H - 12, FONT_SM - 2, GRAY, "center")
+
+    def _draw_corner_decos(self, surface, room_name, rc, ix, iy, iw, ih):
+        h     = sum(ord(c) for c in room_name.lower())
+        dset  = DECO_SETS[h % len(DECO_SETS)]
+        col   = lerp_color(rc, WHITE, 0.45)
+        sz    = 20
+        pad   = sz // 2 + 5
+        corners = [
+            (ix + pad,        iy + pad),          # TL
+            (ix + iw - pad,   iy + pad),          # TR
+            (ix + pad,        iy + ih - pad),     # BL
+            (ix + iw - pad,   iy + ih - pad),     # BR
+        ]
+        for k, (dx, dy) in enumerate(corners):
+            draw_sprite(surface, dset[k], col, dx, dy, sz)
+
+    def _draw_containers(self, surface, room, rc, ix, iy, iw, ih, t):
+        conts  = room.containers
+        n      = len(conts)
+        # Push containers toward centre to avoid overlapping corner decos
+        mg     = 38
+        cix, ciw = ix + mg, iw - mg * 2
+        ciy, cih = iy + mg, ih - mg * 2
+        if ciw < 10 or cih < 10:
+            return
+        cols_c = min(5, n)
+        rows_c = (n + cols_c - 1) // cols_c
+        cell_w = max(1, ciw // cols_c)
+        cell_h = max(1, cih // rows_c)
+        sp_sz  = max(20, min(32, min(cell_w, cell_h) - 16))
+
+        for j, cont in enumerate(conts):
+            ccx = cix + (j % cols_c) * cell_w + cell_w // 2
+            ccy = ciy + (j // cols_c) * cell_h + max(sp_sz, cell_h // 3)
+            sel = (j == self.cont_idx)
+
+            # Sprite
+            pulse   = lerp_color(TEAL, WHITE, (math.sin(t * 2 + j) + 1) / 4)
+            spr_col = lerp_color(GOLD, WHITE, 0.30) if sel else pulse
+            draw_sprite(surface, cont.shape, spr_col, ccx, ccy, sp_sz)
+
+            # Gold selection box
+            if sel:
+                bsz = sp_sz + 6
+                pc  = lerp_color(GOLD, WHITE, (math.sin(t * 6) + 1) / 2)
+                pygame.draw.rect(surface, pc,
+                                 (ccx - bsz // 2, ccy - bsz // 2, bsz, bsz),
+                                 1, border_radius=2)
+
+            # Description + element names
+            dy = ccy + sp_sz // 2 + 4
+            text(surface, cont.description[:14].upper(),
+                 ccx, dy, max(5, FONT_SM - 2), GOLD if sel else TEAL, "center")
+            for k, el in enumerate(cont.elements[:3]):
+                text(surface, el[:12].upper(),
+                     ccx, dy + 10 + k * 9, max(4, FONT_SM - 3), WHITE, "center")
 
 
 # ---------------------------------------------------------------------------
