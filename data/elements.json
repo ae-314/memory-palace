@@ -1,0 +1,946 @@
+[
+  {
+    "number": 1, "name": "Hydrogen", "symbol": "H",
+    "group": 1, "period": 1, "mass": 1.008, "category": "nonmetal",
+    "properties": ["lightest element", "colorless flammable gas", "most abundant element in universe"],
+    "uses": ["rocket fuel", "fertilizer production via Haber process", "hydrogen fuel cells"],
+    "fun_fact": "Hydrogen makes up 75% of all normal matter in the universe by mass.",
+    "found_in": "water, organic molecules, stars"
+  },
+  {
+    "number": 2, "name": "Helium", "symbol": "He",
+    "group": 18, "period": 1, "mass": 4.003, "category": "noble gas",
+    "properties": ["second lightest element", "inert noble gas", "boils at -269°C"],
+    "uses": ["MRI scanner cooling", "party balloons", "deep-sea diving gas mixtures"],
+    "fun_fact": "Helium was discovered on the sun via spectroscopy in 1868 — 27 years before it was found on Earth.",
+    "found_in": "natural gas deposits, alpha particle decay, sun"
+  },
+  {
+    "number": 3, "name": "Lithium", "symbol": "Li",
+    "group": 1, "period": 2, "mass": 6.941, "category": "alkali metal",
+    "properties": ["lightest metal", "soft silvery-white solid", "reacts violently with water"],
+    "uses": ["lithium-ion batteries", "psychiatric medication", "nuclear fusion research"],
+    "fun_fact": "Lithium-ion batteries power nearly all modern portable electronics; demand is expected to increase 40× by 2040.",
+    "found_in": "brine deposits, pegmatite rocks, seawater"
+  },
+  {
+    "number": 4, "name": "Beryllium", "symbol": "Be",
+    "group": 2, "period": 2, "mass": 9.012, "category": "alkaline earth metal",
+    "properties": ["lightweight rigid metal", "toxic if inhaled", "transparent to X-rays"],
+    "uses": ["aerospace structural alloys", "nuclear reactor components", "X-ray tube windows"],
+    "fun_fact": "Beryllium mirrors on the James Webb Space Telescope allow it to peer at galaxies formed just after the Big Bang.",
+    "found_in": "beryl gemstones (emerald, aquamarine), pegmatite rocks"
+  },
+  {
+    "number": 5, "name": "Boron", "symbol": "B",
+    "group": 13, "period": 2, "mass": 10.811, "category": "metalloid",
+    "properties": ["extremely hard metalloid", "high melting point", "semiconductor at high temperature"],
+    "uses": ["borax cleaning agents", "borosilicate glass", "nuclear reactor control rods"],
+    "fun_fact": "Cubic boron nitride is the second-hardest material known — surpassed only by diamond.",
+    "found_in": "borax deposits, boric acid springs, Turkey (world largest reserves)"
+  },
+  {
+    "number": 6, "name": "Carbon", "symbol": "C",
+    "group": 14, "period": 2, "mass": 12.011, "category": "nonmetal",
+    "properties": ["basis of all organic life", "forms 4 covalent bonds", "exists as diamond, graphite, graphene"],
+    "uses": ["steel production", "fossil fuels", "pharmaceuticals and plastics"],
+    "fun_fact": "Graphene — a single carbon atom layer — is 200× stronger than steel and conducts electricity better than copper.",
+    "found_in": "all living matter, coal, oil, natural gas, limestone"
+  },
+  {
+    "number": 7, "name": "Nitrogen", "symbol": "N",
+    "group": 15, "period": 2, "mass": 14.007, "category": "nonmetal",
+    "properties": ["78% of Earth's atmosphere", "inert at room temperature", "liquid at -196°C"],
+    "uses": ["fertilizers", "food preservation", "explosives"],
+    "fun_fact": "The Haber-Bosch process fixes nitrogen into ammonia for fertilizers, feeding roughly half the world's population.",
+    "found_in": "atmosphere (78%), proteins, DNA, soil"
+  },
+  {
+    "number": 8, "name": "Oxygen", "symbol": "O",
+    "group": 16, "period": 2, "mass": 15.999, "category": "nonmetal",
+    "properties": ["21% of Earth's atmosphere", "supports combustion", "essential for aerobic respiration"],
+    "uses": ["medical oxygen therapy", "steel production", "rocket propellant"],
+    "fun_fact": "Almost all of Earth's atmospheric oxygen was produced by photosynthetic organisms over 2.4 billion years ago in the Great Oxidation Event.",
+    "found_in": "atmosphere, water, Earth's crust (most abundant element)"
+  },
+  {
+    "number": 9, "name": "Fluorine", "symbol": "F",
+    "group": 17, "period": 2, "mass": 18.998, "category": "halogen",
+    "properties": ["most electronegative element", "most reactive element", "pale yellow toxic gas"],
+    "uses": ["Teflon non-stick coating", "fluoride toothpaste", "uranium enrichment"],
+    "fun_fact": "Fluorine is so reactive it can make xenon — a noble gas — form chemical compounds.",
+    "found_in": "fluorite, phosphate rocks, ocean water"
+  },
+  {
+    "number": 10, "name": "Neon", "symbol": "Ne",
+    "group": 18, "period": 2, "mass": 20.180, "category": "noble gas",
+    "properties": ["inert noble gas", "glows bright red-orange in discharge tubes", "second lightest noble gas"],
+    "uses": ["neon signs", "cryogenic refrigerant", "high-powered lasers"],
+    "fun_fact": "Neon signs actually only produce red-orange light; other colors in signs use different gases like argon or krypton.",
+    "found_in": "atmosphere (trace), natural gas deposits"
+  },
+  {
+    "number": 11, "name": "Sodium", "symbol": "Na",
+    "group": 1, "period": 3, "mass": 22.990, "category": "alkali metal",
+    "properties": ["soft silvery reactive metal", "explodes violently with water", "essential electrolyte"],
+    "uses": ["table salt (NaCl)", "sodium-vapor streetlights", "sodium-cooled nuclear reactors"],
+    "fun_fact": "Nerve impulses rely entirely on sodium ion movement across cell membranes — without it no thought or movement is possible.",
+    "found_in": "seawater, halite (rock salt), evaporite deposits"
+  },
+  {
+    "number": 12, "name": "Magnesium", "symbol": "Mg",
+    "group": 2, "period": 3, "mass": 24.305, "category": "alkaline earth metal",
+    "properties": ["lightest structural metal", "burns with brilliant white flame", "essential for chlorophyll"],
+    "uses": ["lightweight alloys for aircraft", "fireworks and flares", "antacid medication"],
+    "fun_fact": "Magnesium sits at the centre of every chlorophyll molecule — without it, no photosynthesis and no plant life.",
+    "found_in": "seawater, magnesite, dolomite, olivine"
+  },
+  {
+    "number": 13, "name": "Aluminum", "symbol": "Al",
+    "group": 13, "period": 3, "mass": 26.982, "category": "post-transition metal",
+    "properties": ["most abundant metal in Earth's crust", "lightweight", "corrosion resistant"],
+    "uses": ["aircraft frames", "beverage cans", "overhead power lines"],
+    "fun_fact": "Recycling aluminum uses only 5% of the energy needed to produce it from bauxite — one can save enough energy to run a TV for 3 hours.",
+    "found_in": "bauxite ore, feldspar, clay minerals"
+  },
+  {
+    "number": 14, "name": "Silicon", "symbol": "Si",
+    "group": 14, "period": 3, "mass": 28.086, "category": "metalloid",
+    "properties": ["second most abundant element in Earth's crust", "semiconductor", "forms silica and silicates"],
+    "uses": ["computer chips", "solar cells", "glass and concrete"],
+    "fun_fact": "A single modern CPU contains over 50 billion silicon transistors, each smaller than a coronavirus particle.",
+    "found_in": "quartz, sand, granite, clay (in most rocks)"
+  },
+  {
+    "number": 15, "name": "Phosphorus", "symbol": "P",
+    "group": 15, "period": 3, "mass": 30.974, "category": "nonmetal",
+    "properties": ["essential for DNA and ATP", "white phosphorus is highly toxic", "glows faintly in the dark"],
+    "uses": ["fertilizers", "matches", "flame retardants"],
+    "fun_fact": "Phosphorus was discovered in 1669 by alchemist Hennig Brand, who extracted it from 60 buckets of urine — the first element found by a known scientist.",
+    "found_in": "phosphate rocks, bones, teeth, DNA"
+  },
+  {
+    "number": 16, "name": "Sulfur", "symbol": "S",
+    "group": 16, "period": 3, "mass": 32.065, "category": "nonmetal",
+    "properties": ["yellow solid at room temperature", "pungent odor when burned", "forms sulfuric acid"],
+    "uses": ["sulfuric acid production", "rubber vulcanization", "fungicides"],
+    "fun_fact": "Sulfuric acid is the most produced industrial chemical in the world — its output volume is used as an indicator of a nation's industrial strength.",
+    "found_in": "volcanic deposits, pyrite, gypsum, natural gas"
+  },
+  {
+    "number": 17, "name": "Chlorine", "symbol": "Cl",
+    "group": 17, "period": 3, "mass": 35.453, "category": "halogen",
+    "properties": ["yellow-green toxic gas", "powerful disinfectant", "forms salts with metals"],
+    "uses": ["water purification", "PVC plastic", "bleach"],
+    "fun_fact": "Chlorine-based drinking water disinfection is credited with saving more human lives than any other public health intervention in history.",
+    "found_in": "seawater (as chloride), halite, hydrochloric acid"
+  },
+  {
+    "number": 18, "name": "Argon", "symbol": "Ar",
+    "group": 18, "period": 3, "mass": 39.948, "category": "noble gas",
+    "properties": ["most abundant noble gas in atmosphere", "completely inert", "third most abundant gas in air"],
+    "uses": ["welding shielding gas", "incandescent light bulbs", "wine preservation"],
+    "fun_fact": "Argon makes up 0.93% of Earth's atmosphere — nearly all produced by radioactive decay of potassium-40 in rocks over billions of years.",
+    "found_in": "atmosphere (0.93%), potassium-40 decay products"
+  },
+  {
+    "number": 19, "name": "Potassium", "symbol": "K",
+    "group": 1, "period": 4, "mass": 39.098, "category": "alkali metal",
+    "properties": ["soft reactive silvery metal", "essential for nerve function", "ignites in water"],
+    "uses": ["fertilizers", "potassium chloride supplements", "gunpowder"],
+    "fun_fact": "White beans and dark leafy greens contain far more potassium per serving than bananas, despite the common misconception.",
+    "found_in": "sylvite, carnallite, seawater, all living cells"
+  },
+  {
+    "number": 20, "name": "Calcium", "symbol": "Ca",
+    "group": 2, "period": 4, "mass": 40.078, "category": "alkaline earth metal",
+    "properties": ["most abundant metal in human body", "white reactive metal", "essential for bones and teeth"],
+    "uses": ["cement and concrete", "steel production", "calcium dietary supplements"],
+    "fun_fact": "99% of the calcium in your body is in bones and teeth; the remaining 1% is critical for muscle contraction and nerve signaling.",
+    "found_in": "limestone, gypsum, calcium feldspar, bones"
+  },
+  {
+    "number": 21, "name": "Scandium", "symbol": "Sc",
+    "group": 3, "period": 4, "mass": 44.956, "category": "transition metal",
+    "properties": ["rare silvery-white metal", "lightweight", "small ionic radius"],
+    "uses": ["aluminum alloys for aircraft and sports equipment", "solid oxide fuel cells", "stadium lighting"],
+    "fun_fact": "Scandium-aluminum alloys are used in Russian MiG fighter jets and professional baseball bats for extraordinary strength-to-weight ratio.",
+    "found_in": "trace in many minerals, thortveitite, Scandinavian rare earth deposits"
+  },
+  {
+    "number": 22, "name": "Titanium", "symbol": "Ti",
+    "group": 4, "period": 4, "mass": 47.867, "category": "transition metal",
+    "properties": ["strongest structural metal per unit weight", "highly corrosion resistant", "biocompatible"],
+    "uses": ["aircraft and spacecraft", "medical implants and joint replacements", "white paint pigment (TiO₂)"],
+    "fun_fact": "Titanium is so biocompatible that bone cells grow directly onto it — making it ideal for dental implants and artificial joints.",
+    "found_in": "ilmenite, rutile, titanite, ubiquitous in rocks"
+  },
+  {
+    "number": 23, "name": "Vanadium", "symbol": "V",
+    "group": 5, "period": 4, "mass": 50.942, "category": "transition metal",
+    "properties": ["hard blue-grey metal", "high melting point", "forms multiple oxidation states"],
+    "uses": ["high-strength steel alloys for tools", "vanadium redox flow batteries", "catalysts in sulfuric acid production"],
+    "fun_fact": "Vanadium flow batteries are emerging as the leading technology for grid-scale renewable energy storage.",
+    "found_in": "magnetite, vanadinite, carnotite, crude oil"
+  },
+  {
+    "number": 24, "name": "Chromium", "symbol": "Cr",
+    "group": 6, "period": 4, "mass": 51.996, "category": "transition metal",
+    "properties": ["hard lustrous metal", "highly resistant to corrosion", "vivid colored compounds"],
+    "uses": ["stainless steel", "chrome plating", "green pigments (chromium oxide)"],
+    "fun_fact": "Chromium gives rubies their red color and emeralds their green — the same element, different crystal structures, totally different colors.",
+    "found_in": "chromite ore, ultramafic rocks"
+  },
+  {
+    "number": 25, "name": "Manganese", "symbol": "Mn",
+    "group": 7, "period": 4, "mass": 54.938, "category": "transition metal",
+    "properties": ["brittle grey metal", "essential trace mineral", "paramagnetic"],
+    "uses": ["steel hardening", "dry cell batteries", "purple pigments"],
+    "fun_fact": "Polymetallic nodules on the ocean floor contain vast manganese deposits — estimated to exceed all land reserves combined.",
+    "found_in": "pyrolusite (MnO₂), seafloor manganese nodules"
+  },
+  {
+    "number": 26, "name": "Iron", "symbol": "Fe",
+    "group": 8, "period": 4, "mass": 55.845, "category": "transition metal",
+    "properties": ["most common element on Earth by mass", "strongly magnetic", "rusts in moist air"],
+    "uses": ["steel construction", "hemoglobin in blood", "cast iron cookware"],
+    "fun_fact": "Earth's inner core is a solid iron-nickel crystal the size of the Moon, spinning slightly faster than the rest of the planet.",
+    "found_in": "hematite, magnetite, Earth's core (primary component)"
+  },
+  {
+    "number": 27, "name": "Cobalt", "symbol": "Co",
+    "group": 9, "period": 4, "mass": 58.933, "category": "transition metal",
+    "properties": ["hard blue-grey lustrous metal", "ferromagnetic", "radioactive Co-60"],
+    "uses": ["lithium-ion battery cathodes", "blue pigment", "cancer radiation therapy (Co-60)"],
+    "fun_fact": "Cobalt-60 'gamma knife' surgery treats brain tumors with pinpoint radiation without ever cutting the skull.",
+    "found_in": "cobaltite, erythrite, byproduct of nickel mining"
+  },
+  {
+    "number": 28, "name": "Nickel", "symbol": "Ni",
+    "group": 10, "period": 4, "mass": 58.693, "category": "transition metal",
+    "properties": ["hard silvery-white metal", "corrosion resistant", "ferromagnetic"],
+    "uses": ["stainless steel", "rechargeable batteries", "electroplating"],
+    "fun_fact": "Some nickel-tolerant bacteria are being studied to bioremediate nickel-contaminated industrial sites.",
+    "found_in": "pentlandite, garnierite, Earth's core and mantle"
+  },
+  {
+    "number": 29, "name": "Copper", "symbol": "Cu",
+    "group": 11, "period": 4, "mass": 63.546, "category": "transition metal",
+    "properties": ["best electrical conductor after silver", "reddish-brown ductile metal", "naturally antimicrobial"],
+    "uses": ["electrical wiring", "plumbing", "coins"],
+    "fun_fact": "Copper kills bacteria on contact within hours — hospitals are replacing steel door handles with copper to reduce hospital-acquired infections.",
+    "found_in": "native copper, chalcopyrite, malachite"
+  },
+  {
+    "number": 30, "name": "Zinc", "symbol": "Zn",
+    "group": 12, "period": 4, "mass": 65.38, "category": "transition metal",
+    "properties": ["bluish-white metal", "protects iron from corrosion (galvanizing)", "essential micronutrient"],
+    "uses": ["galvanizing steel", "zinc supplements", "brass alloys"],
+    "fun_fact": "Zinc deficiency affects around 2 billion people worldwide and is a leading cause of preventable disease burden in developing countries.",
+    "found_in": "sphalerite, smithsonite, zinc blende"
+  },
+  {
+    "number": 31, "name": "Gallium", "symbol": "Ga",
+    "group": 13, "period": 4, "mass": 69.723, "category": "post-transition metal",
+    "properties": ["melts in your hand (29.8°C)", "silvery-white soft metal", "expands when it solidifies"],
+    "uses": ["GaN semiconductors in LEDs", "thin-film solar cells", "thermometers"],
+    "fun_fact": "Gallium nitride LEDs improved lighting efficiency from 5% (incandescent) to 50%+ — the inventors won the 2014 Nobel Prize in Physics.",
+    "found_in": "bauxite, sphalerite (trace), coal fly ash"
+  },
+  {
+    "number": 32, "name": "Germanium", "symbol": "Ge",
+    "group": 14, "period": 4, "mass": 72.630, "category": "metalloid",
+    "properties": ["semiconductor metalloid", "transparent to infrared light", "brittle"],
+    "uses": ["fiber optic cables", "infrared optics", "solar cells"],
+    "fun_fact": "Mendeleev predicted germanium's existence in 1871 with near-perfect accuracy — 15 years before its discovery — validating the periodic table.",
+    "found_in": "sphalerite, coal, germanite (rare)"
+  },
+  {
+    "number": 33, "name": "Arsenic", "symbol": "As",
+    "group": 15, "period": 4, "mass": 74.922, "category": "metalloid",
+    "properties": ["toxic metalloid", "grey metallic stable form", "semiconductor properties"],
+    "uses": ["wood preservative", "semiconductor dopant", "cancer drug (arsenic trioxide)"],
+    "fun_fact": "Arsenic trioxide (As₂O₃) is an FDA-approved chemotherapy drug that cures a once-fatal blood cancer — one of history's oldest poisons is now a medicine.",
+    "found_in": "arsenopyrite, realgar, orpiment, drinking water contamination"
+  },
+  {
+    "number": 34, "name": "Selenium", "symbol": "Se",
+    "group": 16, "period": 4, "mass": 78.971, "category": "nonmetal",
+    "properties": ["photoconductive — conducts electricity in light", "essential micronutrient at low doses", "red and grey allotropes"],
+    "uses": ["CdSe solar cells", "photocopiers (historical)", "antioxidant supplements"],
+    "fun_fact": "Selenium deficiency causes Keshan disease (a heart condition) while excess selenium causes hair loss and a garlic-like body odor.",
+    "found_in": "pyrite (trace), volcanic soil, seafood"
+  },
+  {
+    "number": 35, "name": "Bromine", "symbol": "Br",
+    "group": 17, "period": 4, "mass": 79.904, "category": "halogen",
+    "properties": ["only liquid non-metallic element at room temperature", "reddish-brown fuming liquid", "toxic vapors"],
+    "uses": ["flame retardants", "water treatment", "agricultural fumigants"],
+    "fun_fact": "Dead Sea water contains up to 0.4% bromine — 50× more than regular seawater — and is mined as a major commercial source.",
+    "found_in": "seawater, brine deposits, Dead Sea"
+  },
+  {
+    "number": 36, "name": "Krypton", "symbol": "Kr",
+    "group": 18, "period": 4, "mass": 83.798, "category": "noble gas",
+    "properties": ["inert noble gas", "glows white-grey in discharge tubes", "denser than air"],
+    "uses": ["high-performance light bulbs", "laser technology", "historical definition of the meter"],
+    "fun_fact": "From 1960–1983 the official international meter was defined by the wavelength of krypton-86 light — chosen for its remarkable precision.",
+    "found_in": "atmosphere (trace), natural gas (trace)"
+  },
+  {
+    "number": 37, "name": "Rubidium", "symbol": "Rb",
+    "group": 1, "period": 5, "mass": 85.468, "category": "alkali metal",
+    "properties": ["soft silvery alkali metal", "ignites spontaneously in air", "highly reactive with water"],
+    "uses": ["atomic clocks", "photomultiplier tubes", "GPS system timing"],
+    "fun_fact": "Rubidium atomic clocks are accurate to within 1 second in 300 years and are used in GPS satellites to synchronize timing.",
+    "found_in": "lepidolite, pollucite (trace), mineral springs"
+  },
+  {
+    "number": 38, "name": "Strontium", "symbol": "Sr",
+    "group": 2, "period": 5, "mass": 87.62, "category": "alkaline earth metal",
+    "properties": ["silvery-white alkaline earth metal", "burns crimson red", "chemically similar to calcium"],
+    "uses": ["fireworks (red color)", "cathode ray tubes (historical)", "bone density treatment"],
+    "fun_fact": "Strontium-90 from nuclear fallout mimics calcium in bones; its dangers were a key driver of the 1963 Partial Nuclear Test Ban Treaty.",
+    "found_in": "celestite, strontianite, ocean water"
+  },
+  {
+    "number": 39, "name": "Yttrium", "symbol": "Y",
+    "group": 3, "period": 5, "mass": 88.906, "category": "transition metal",
+    "properties": ["silvery metallic", "resembles rare earth elements", "forms red phosphor compounds"],
+    "uses": ["red phosphor in TVs and LEDs", "YAG lasers for surgery and industry", "cancer treatment (Y-90)"],
+    "fun_fact": "Yttrium-aluminum-garnet (YAG) lasers are used in laser eye surgery, tattoo removal, and precision metal cutting.",
+    "found_in": "xenotime, monazite, rare earth deposits"
+  },
+  {
+    "number": 40, "name": "Zirconium", "symbol": "Zr",
+    "group": 4, "period": 5, "mass": 91.224, "category": "transition metal",
+    "properties": ["grey-white lustrous metal", "extremely corrosion resistant", "nearly transparent to neutrons"],
+    "uses": ["nuclear fuel rod cladding", "zirconia ceramics", "space shuttle heat shield tiles"],
+    "fun_fact": "Zirconium is transparent to neutrons — ideal for wrapping nuclear fuel rods, letting reactions proceed while containing the fuel.",
+    "found_in": "zircon (ZrSiO₄), baddeleyite"
+  },
+  {
+    "number": 41, "name": "Niobium", "symbol": "Nb",
+    "group": 5, "period": 5, "mass": 92.906, "category": "transition metal",
+    "properties": ["soft grey metal", "superconductor at low temperature", "highly corrosion resistant"],
+    "uses": ["high-strength steel alloys", "superconducting MRI magnets", "jet engine turbine blades"],
+    "fun_fact": "Brazil controls over 90% of the world's niobium supply; without it modern skyscrapers and pipelines couldn't achieve their strength-to-weight ratios.",
+    "found_in": "columbite-tantalite, pyrochlore, mainly Brazil"
+  },
+  {
+    "number": 42, "name": "Molybdenum", "symbol": "Mo",
+    "group": 6, "period": 5, "mass": 95.96, "category": "transition metal",
+    "properties": ["silvery-white metal", "very high melting point (2623°C)", "essential trace mineral"],
+    "uses": ["high-strength steel alloys", "aircraft engine parts", "enzyme cofactor in nitrogen fixation"],
+    "fun_fact": "Molybdenum is essential to nitrogenase, the enzyme that fixes atmospheric nitrogen into ammonia — critical for all biological nitrogen fixation.",
+    "found_in": "molybdenite (MoS₂), wulfenite, porphyry copper deposits"
+  },
+  {
+    "number": 43, "name": "Technetium", "symbol": "Tc",
+    "group": 7, "period": 5, "mass": 98, "category": "transition metal",
+    "properties": ["first artificially produced element", "all isotopes radioactive", "grey metallic"],
+    "uses": ["nuclear medicine imaging (Tc-99m)", "superconductor alloy research", "corrosion inhibitor (research)"],
+    "fun_fact": "Technetium-99m is the most widely used medical radioisotope in the world — 40 million diagnostic scans per year rely on it.",
+    "found_in": "uranium ores (trace), produced in nuclear reactors"
+  },
+  {
+    "number": 44, "name": "Ruthenium", "symbol": "Ru",
+    "group": 8, "period": 5, "mass": 101.07, "category": "transition metal",
+    "properties": ["rare platinum group metal", "hard silvery-white", "highly inert chemically"],
+    "uses": ["hard disk drive coatings", "chemical catalysts", "electrical contacts"],
+    "fun_fact": "Ruthenium-based dye-sensitized solar cells mimic photosynthesis — potentially cheaper than silicon solar panels.",
+    "found_in": "platinum ores, pentlandite, Ural mountains"
+  },
+  {
+    "number": 45, "name": "Rhodium", "symbol": "Rh",
+    "group": 9, "period": 5, "mass": 102.906, "category": "transition metal",
+    "properties": ["rarest platinum group metal", "highly reflective silvery-white", "extremely corrosion resistant"],
+    "uses": ["catalytic converters (nitrogen oxide reduction)", "jewelry plating", "chemical catalysts"],
+    "fun_fact": "Rhodium is the world's most expensive metal — rarer than platinum or gold, one troy ounce can cost more than a used car.",
+    "found_in": "platinum ores, byproduct of nickel/copper mining"
+  },
+  {
+    "number": 46, "name": "Palladium", "symbol": "Pd",
+    "group": 10, "period": 5, "mass": 106.42, "category": "transition metal",
+    "properties": ["silver-white transition metal", "absorbs up to 900× its volume in hydrogen", "excellent catalyst"],
+    "uses": ["catalytic converters", "hydrogen purification membranes", "electronics"],
+    "fun_fact": "Palladium can absorb 900× its own volume of hydrogen gas — researchers are studying it as a hydrogen storage medium for fuel cells.",
+    "found_in": "platinum ores, nickel-copper deposits, Russia and South Africa"
+  },
+  {
+    "number": 47, "name": "Silver", "symbol": "Ag",
+    "group": 11, "period": 5, "mass": 107.868, "category": "transition metal",
+    "properties": ["highest electrical conductivity of any element", "antimicrobial surface", "bright lustrous metal"],
+    "uses": ["electrical contacts", "antimicrobial coatings", "photographic film"],
+    "fun_fact": "Silver nanoparticles are woven into hospital fabrics and bandages to prevent bacterial infection without antibiotics.",
+    "found_in": "native silver, argentite, galena (trace)"
+  },
+  {
+    "number": 48, "name": "Cadmium", "symbol": "Cd",
+    "group": 12, "period": 5, "mass": 112.411, "category": "transition metal",
+    "properties": ["soft bluish-white metal", "highly toxic", "good electrochemical properties"],
+    "uses": ["nickel-cadmium rechargeable batteries", "yellow pigments", "nuclear reactor control rods"],
+    "fun_fact": "The Itai-itai disease ('it hurts') in 1950s Japan was caused by cadmium-contaminated irrigation water — one of history's first documented industrial pollution disasters.",
+    "found_in": "sphalerite (ZnS), byproduct of zinc smelting"
+  },
+  {
+    "number": 49, "name": "Indium", "symbol": "In",
+    "group": 13, "period": 5, "mass": 114.818, "category": "post-transition metal",
+    "properties": ["extremely soft silvery-white metal", "transparent as oxide (ITO)", "low melting point"],
+    "uses": ["touchscreen coatings (ITO)", "thin-film solar cells", "low-temperature solders"],
+    "fun_fact": "Nearly every smartphone and tablet screen contains indium tin oxide (ITO) — there may not be enough indium to sustain current production trends.",
+    "found_in": "sphalerite, trace in zinc ores"
+  },
+  {
+    "number": 50, "name": "Tin", "symbol": "Sn",
+    "group": 14, "period": 5, "mass": 118.710, "category": "post-transition metal",
+    "properties": ["silvery-white ductile metal", "'cries' when bent (tin cry)", "low melting point"],
+    "uses": ["tin-plated steel cans", "solder", "bronze alloy (with copper)"],
+    "fun_fact": "Below 13°C, white tin slowly transforms into powdery grey tin — 'tin pest' may have contributed to the failure of Napoleon's Russian campaign via disintegrating coat buttons.",
+    "found_in": "cassiterite (SnO₂), tin mines in China, Malaysia, Bolivia"
+  },
+  {
+    "number": 51, "name": "Antimony", "symbol": "Sb",
+    "group": 15, "period": 5, "mass": 121.760, "category": "metalloid",
+    "properties": ["brittle silvery metalloid", "expands when solidifying", "toxic in high doses"],
+    "uses": ["flame retardants", "lead-acid battery plates", "semiconductor research"],
+    "fun_fact": "Ancient Egyptians used antimony sulfide as black kohl eyeliner — modern analysis shows it may have had antibacterial properties against Nile infections.",
+    "found_in": "stibnite, valentinite, China (80% of production)"
+  },
+  {
+    "number": 52, "name": "Tellurium", "symbol": "Te",
+    "group": 16, "period": 5, "mass": 127.60, "category": "metalloid",
+    "properties": ["brittle silvery-white metalloid", "photoconductive", "skin contact produces garlic-like odor"],
+    "uses": ["CdTe thin-film solar panels", "thermoelectric devices", "rubber vulcanization"],
+    "fun_fact": "Cadmium telluride solar panels are currently the cheapest form of solar electricity per watt for utility-scale installations.",
+    "found_in": "gold and silver ores (trace), calaverite"
+  },
+  {
+    "number": 53, "name": "Iodine", "symbol": "I",
+    "group": 17, "period": 5, "mass": 126.904, "category": "halogen",
+    "properties": ["purple-black solid", "essential for thyroid hormones", "antimicrobial"],
+    "uses": ["medical disinfectant", "thyroid medication", "contrast agent for CT scans"],
+    "fun_fact": "Iodine deficiency is the world's leading cause of preventable brain damage — iodizing salt has been called one of history's greatest public health victories.",
+    "found_in": "seawater, kelp, thyroid glands of animals, Chilean nitrate deposits"
+  },
+  {
+    "number": 54, "name": "Xenon", "symbol": "Xe",
+    "group": 18, "period": 5, "mass": 131.293, "category": "noble gas",
+    "properties": ["heavy noble gas", "colorless and odorless", "forms compounds with fluorine"],
+    "uses": ["xenon HID headlights", "general anesthesia", "ion thrusters for spacecraft"],
+    "fun_fact": "Xenon ion engines on NASA's Dawn spacecraft accelerated xenon atoms to 90,000 mph — providing thrust in the vacuum of space for years.",
+    "found_in": "atmosphere (trace), natural gas (trace)"
+  },
+  {
+    "number": 55, "name": "Cesium", "symbol": "Cs",
+    "group": 1, "period": 6, "mass": 132.905, "category": "alkali metal",
+    "properties": ["softest metal", "golden-yellow color", "extremely reactive — ignites in air"],
+    "uses": ["atomic clocks (defines the SI second)", "oil well drilling fluid", "photoelectric cells"],
+    "fun_fact": "The SI second is defined by 9,192,631,770 oscillations of cesium-133 atoms — every GPS and internet protocol depends on this definition.",
+    "found_in": "pollucite, lepidolite (trace)"
+  },
+  {
+    "number": 56, "name": "Barium", "symbol": "Ba",
+    "group": 2, "period": 6, "mass": 137.327, "category": "alkaline earth metal",
+    "properties": ["soft silvery alkaline earth metal", "highly reactive with air and water", "heavy"],
+    "uses": ["barium sulfate X-ray contrast agent", "fireworks (green color)", "rat poison (barium carbonate)"],
+    "fun_fact": "Drinking a thick barium sulfate 'milkshake' before an X-ray coats the digestive tract, making soft tissue visible — barium is dense enough to block X-rays.",
+    "found_in": "barite (BaSO₄), witherite, oil well cuttings"
+  },
+  {
+    "number": 57, "name": "Lanthanum", "symbol": "La",
+    "group": "lanthanide", "period": 6, "mass": 138.905, "category": "lanthanide",
+    "properties": ["soft malleable silvery-white metal", "tarnishes rapidly in air", "most basic lanthanide"],
+    "uses": ["hybrid car batteries (La-NiH)", "high-refractive camera lenses", "hydrogen storage alloys"],
+    "fun_fact": "Each Toyota Prius battery pack contains roughly 10–15 kg of lanthanum from Chinese rare earth mines.",
+    "found_in": "monazite, bastnäsite, rare earth deposits (China)"
+  },
+  {
+    "number": 58, "name": "Cerium", "symbol": "Ce",
+    "group": "lanthanide", "period": 6, "mass": 140.116, "category": "lanthanide",
+    "properties": ["most abundant rare earth element", "pyrophoric when scratched", "strong reducing agent"],
+    "uses": ["catalytic converter oxygen storage", "flints in cigarette lighters", "glass and gemstone polishing"],
+    "fun_fact": "Cigarette lighter flints are made from ferrocerium — an alloy of cerium and iron — not real flint. The sparks reach 3,000°F.",
+    "found_in": "monazite, bastnäsite, most abundant rare earth in Earth's crust"
+  },
+  {
+    "number": 59, "name": "Praseodymium", "symbol": "Pr",
+    "group": "lanthanide", "period": 6, "mass": 140.908, "category": "lanthanide",
+    "properties": ["soft silvery-yellow rare earth metal", "forms green compounds", "magnetic properties"],
+    "uses": ["neodymium-praseodymium permanent magnets", "yellow-green glass and ceramics", "aircraft engine components"],
+    "fun_fact": "Praseodymium-doped fiber amplifiers (PDFA) boost optical signals in undersea cables, enabling high-speed internet across entire ocean basins.",
+    "found_in": "monazite, bastnäsite, rare earth deposits"
+  },
+  {
+    "number": 60, "name": "Neodymium", "symbol": "Nd",
+    "group": "lanthanide", "period": 6, "mass": 144.242, "category": "lanthanide",
+    "properties": ["silvery rare earth metal", "forms strongest permanent magnets", "bluish-violet compounds"],
+    "uses": ["NdFeB permanent magnets for motors and speakers", "wind turbine generators", "Nd:YAG lasers"],
+    "fun_fact": "Neodymium magnets are 10× stronger than regular magnets — a coin-sized one can lift 1000× its own weight, enabling miniaturized electric motors.",
+    "found_in": "bastnäsite, monazite, mainly China"
+  },
+  {
+    "number": 61, "name": "Promethium", "symbol": "Pm",
+    "group": "lanthanide", "period": 6, "mass": 145, "category": "lanthanide",
+    "properties": ["radioactive rare earth", "no stable isotopes", "soft silvery-white metal"],
+    "uses": ["nuclear batteries (Pm-147)", "luminous paint (historical)", "thickness gauges"],
+    "fun_fact": "Promethium is one of only two naturally radioactive elements not found on Earth — it exists only as a nuclear reactor fission product.",
+    "found_in": "uranium fission products in nuclear reactors only"
+  },
+  {
+    "number": 62, "name": "Samarium", "symbol": "Sm",
+    "group": "lanthanide", "period": 6, "mass": 150.36, "category": "lanthanide",
+    "properties": ["hard silvery rare earth metal", "SmCo magnets stable at high temperature", "multiple stable isotopes"],
+    "uses": ["SmCo permanent magnets for jet engines", "cancer treatment (Sm-153)", "infrared absorbing glass"],
+    "fun_fact": "Samarium-cobalt magnets work at temperatures up to 300°C — essential for jet engine sensors where neodymium magnets would demagnetize.",
+    "found_in": "monazite, bastnäsite, cerite"
+  },
+  {
+    "number": 63, "name": "Europium", "symbol": "Eu",
+    "group": "lanthanide", "period": 6, "mass": 151.964, "category": "lanthanide",
+    "properties": ["softest and most reactive rare earth", "strongly fluorescent", "absorbs neutrons well"],
+    "uses": ["red and blue phosphors in LED screens", "euro banknote anti-counterfeiting", "nuclear reactor control"],
+    "fun_fact": "Euro banknotes fluoresce under UV light due to europium-doped ink — making basic counterfeiting virtually impossible.",
+    "found_in": "monazite, bastnäsite, xenotime"
+  },
+  {
+    "number": 64, "name": "Gadolinium", "symbol": "Gd",
+    "group": "lanthanide", "period": 6, "mass": 157.25, "category": "lanthanide",
+    "properties": ["silvery-white ferromagnetic metal", "strongly paramagnetic", "highest neutron capture cross-section of stable elements"],
+    "uses": ["MRI contrast agents", "neutron shielding in nuclear reactors", "magnetocaloric refrigeration"],
+    "fun_fact": "Gadolinium-based contrast agents injected before MRI scans make soft tissues appear 10× brighter — used in ~30 million MRI procedures annually.",
+    "found_in": "monazite, gadolinite, bastnäsite"
+  },
+  {
+    "number": 65, "name": "Terbium", "symbol": "Tb",
+    "group": "lanthanide", "period": 6, "mass": 158.925, "category": "lanthanide",
+    "properties": ["silvery-white rare earth", "highly magnetic", "green fluorescent compounds"],
+    "uses": ["green phosphors in displays", "magnetostrictive actuators (Terfenol-D)", "solid state lighting"],
+    "fun_fact": "Terfenol-D (terbium-dysprosium-iron) changes shape in a magnetic field — used in sonar systems and active noise cancellation in aircraft.",
+    "found_in": "monazite, gadolinite, xenotime"
+  },
+  {
+    "number": 66, "name": "Dysprosium", "symbol": "Dy",
+    "group": "lanthanide", "period": 6, "mass": 162.500, "category": "lanthanide",
+    "properties": ["silvery-white rare earth", "highest magnetic susceptibility at room temperature", "strong neutron absorber"],
+    "uses": ["neodymium magnet heat-resistance additive for EVs", "nuclear reactor control rods", "hard disk drives"],
+    "fun_fact": "Adding 1% dysprosium to neodymium magnets allows them to operate in the 200°C+ heat of electric vehicle motors — it is a critical EV production bottleneck.",
+    "found_in": "monazite, bastnäsite, mainly China"
+  },
+  {
+    "number": 67, "name": "Holmium", "symbol": "Ho",
+    "group": "lanthanide", "period": 6, "mass": 164.930, "category": "lanthanide",
+    "properties": ["soft silvery-white rare earth", "highest magnetic moment of any element", "yellow compounds"],
+    "uses": ["pole pieces for the strongest electromagnets", "Ho:YAG surgical laser", "nuclear control rods"],
+    "fun_fact": "Holmium lasers are used to precisely vaporize kidney stones inside the body — no surgery required.",
+    "found_in": "monazite, gadolinite"
+  },
+  {
+    "number": 68, "name": "Erbium", "symbol": "Er",
+    "group": "lanthanide", "period": 6, "mass": 167.259, "category": "lanthanide",
+    "properties": ["silvery-white rare earth", "pink oxide compounds", "stimulates photon emission at 1550nm"],
+    "uses": ["erbium-doped fiber amplifiers (EDFA) for internet", "pink decorative glass", "dermatological laser"],
+    "fun_fact": "Erbium-doped fiber amplifiers (EDFA) are why modern internet exists — they boost light signals in undersea cables without converting to electrical signals.",
+    "found_in": "monazite, xenotime, euxenite"
+  },
+  {
+    "number": 69, "name": "Thulium", "symbol": "Tm",
+    "group": "lanthanide", "period": 6, "mass": 168.934, "category": "lanthanide",
+    "properties": ["silvery-grey rare earth", "rarest stable rare earth element", "X-ray emitter when irradiated"],
+    "uses": ["portable X-ray machines", "Tm:YAG surgical lasers", "thulium fiber lasers for metal cutting"],
+    "fun_fact": "Thulium-170 powered the world's first portable X-ray source — small enough to carry into remote areas without electricity.",
+    "found_in": "monazite (trace), gadolinite"
+  },
+  {
+    "number": 70, "name": "Ytterbium", "symbol": "Yb",
+    "group": "lanthanide", "period": 6, "mass": 173.054, "category": "lanthanide",
+    "properties": ["soft silvery rare earth", "divalent and trivalent states", "strong optical emission"],
+    "uses": ["most accurate atomic clocks", "fiber lasers for metal cutting", "stress gauges in construction monitoring"],
+    "fun_fact": "Ytterbium atomic clocks are so precise they would lose only 1 second every 10 billion years — more accurate than the age of the universe.",
+    "found_in": "monazite, euxenite, gadolinite"
+  },
+  {
+    "number": 71, "name": "Lutetium", "symbol": "Lu",
+    "group": "lanthanide", "period": 6, "mass": 174.967, "category": "lanthanide",
+    "properties": ["hardest and densest rare earth", "silvery-white", "weakly radioactive (Lu-176)"],
+    "uses": ["targeted cancer therapy (Lu-177 PSMA)", "PET scan detectors", "petroleum refining catalysts"],
+    "fun_fact": "Lutetium-177 DOTATATE (Lutathera) approved in 2018 delivers radiation directly to pancreatic tumor cells via a targeting molecule.",
+    "found_in": "monazite, xenotime (trace)"
+  },
+  {
+    "number": 72, "name": "Hafnium", "symbol": "Hf",
+    "group": 4, "period": 6, "mass": 178.49, "category": "transition metal",
+    "properties": ["silvery ductile metal", "strong neutron absorber", "high melting point (2233°C)"],
+    "uses": ["nuclear reactor control rods", "jet engine turbine blade coatings", "semiconductor gate dielectric (HfO₂)"],
+    "fun_fact": "Hafnium oxide replaced silicon oxide as the transistor gate dielectric in Intel's 45nm chips in 2007 — the first fundamental transistor change in 40 years.",
+    "found_in": "zircon (1–3% Hf alongside zirconium)"
+  },
+  {
+    "number": 73, "name": "Tantalum", "symbol": "Ta",
+    "group": 5, "period": 6, "mass": 180.948, "category": "transition metal",
+    "properties": ["dense blue-grey metal", "extremely corrosion resistant", "biocompatible"],
+    "uses": ["capacitors in smartphones and laptops", "surgical implants", "chemical processing equipment"],
+    "fun_fact": "About 29% of the world's tantalum comes from the Democratic Republic of Congo; the scramble for 'conflict coltan' has fueled civil wars and child labor.",
+    "found_in": "columbite-tantalite (coltan), mainly Africa and Australia"
+  },
+  {
+    "number": 74, "name": "Tungsten", "symbol": "W",
+    "group": 6, "period": 6, "mass": 183.84, "category": "transition metal",
+    "properties": ["highest melting point of any element (3422°C)", "very high density", "hardest pure metal"],
+    "uses": ["light bulb filaments (historical)", "carbide cutting tools", "X-ray tube anodes"],
+    "fun_fact": "Tungsten carbide is almost as hard as diamond and is used in drill bits, mining equipment, and the tiny ball-bearing tips of ballpoint pens.",
+    "found_in": "wolframite, scheelite, mainly China (80% of production)"
+  },
+  {
+    "number": 75, "name": "Rhenium", "symbol": "Re",
+    "group": 7, "period": 6, "mass": 186.207, "category": "transition metal",
+    "properties": ["second highest melting point (3186°C)", "very dense", "last stable natural element discovered (1925)"],
+    "uses": ["jet engine superalloy turbine blades", "petroleum refining catalysts", "thermocouples for extreme temperatures"],
+    "fun_fact": "Single-crystal rhenium superalloy turbine blades operate above their nominal melting point — possible only through internal cooling channels and ceramic coatings.",
+    "found_in": "molybdenite (trace), porphyry copper deposits"
+  },
+  {
+    "number": 76, "name": "Osmium", "symbol": "Os",
+    "group": 8, "period": 6, "mass": 190.23, "category": "transition metal",
+    "properties": ["densest naturally occurring element (22.59 g/cm³)", "hard blue-grey metal", "toxic tetroxide vapor"],
+    "uses": ["fountain pen tips", "electrical contacts", "osmium tetroxide for electron microscopy staining"],
+    "fun_fact": "Osmium tetroxide (OsO₄) is used in electron microscopy to stain lipid membranes, making the ultrastructure of cells visible at nanometer scale.",
+    "found_in": "platinum group ores, Ural mountains, South Africa"
+  },
+  {
+    "number": 77, "name": "Iridium", "symbol": "Ir",
+    "group": 9, "period": 6, "mass": 192.217, "category": "transition metal",
+    "properties": ["second densest element", "most corrosion-resistant metal", "extremely hard"],
+    "uses": ["spark plug tips", "crucibles for crystal growth", "geologic marker for asteroid impacts"],
+    "fun_fact": "An iridium-rich layer in rocks worldwide marks the asteroid impact 66 million years ago that wiped out the dinosaurs — iridium is rare on Earth but common in asteroids.",
+    "found_in": "platinum ores, nickel-copper deposits"
+  },
+  {
+    "number": 78, "name": "Platinum", "symbol": "Pt",
+    "group": 10, "period": 6, "mass": 195.084, "category": "transition metal",
+    "properties": ["silvery-white precious metal", "highly resistant to corrosion", "excellent catalyst"],
+    "uses": ["catalytic converters", "cisplatin chemotherapy", "laboratory crucibles and electrodes"],
+    "fun_fact": "Cisplatin, a platinum compound discovered accidentally in 1965, has a 90%+ cure rate for testicular cancer — one of the most successful cancer treatments ever developed.",
+    "found_in": "native platinum, platinum ores, South Africa (80% of supply)"
+  },
+  {
+    "number": 79, "name": "Gold", "symbol": "Au",
+    "group": 11, "period": 6, "mass": 196.967, "category": "transition metal",
+    "properties": ["most malleable and ductile element", "excellent electrical conductor", "chemically inert"],
+    "uses": ["electronic connector plating", "dentistry", "currency and investment"],
+    "fun_fact": "All the gold ever mined by humanity would fit into a cube about 21 meters on each side — roughly 190,000 tonnes total.",
+    "found_in": "native gold, tellurides, alluvial deposits"
+  },
+  {
+    "number": 80, "name": "Mercury", "symbol": "Hg",
+    "group": 12, "period": 6, "mass": 200.592, "category": "transition metal",
+    "properties": ["only liquid metal at room temperature", "very high density", "neurotoxic"],
+    "uses": ["fluorescent lights (CFL)", "thermometers (increasingly banned)", "gold amalgam in artisanal mining"],
+    "fun_fact": "Illegal artisanal gold mining releases as much mercury into the environment as all industrial sources combined — it is the world's largest mercury pollution source.",
+    "found_in": "cinnabar (HgS), volcanic emissions"
+  },
+  {
+    "number": 81, "name": "Thallium", "symbol": "Tl",
+    "group": 13, "period": 6, "mass": 204.383, "category": "post-transition metal",
+    "properties": ["soft grey post-transition metal", "highly toxic — mimics potassium in cells", "semiconductor properties"],
+    "uses": ["infrared optics", "cardiac stress test imaging (Tl-201)", "historical rat poison"],
+    "fun_fact": "Thallium poisoning was once called 'the poisoner's poison' — its symptoms mimic many diseases, and it featured in several high-profile murder cases.",
+    "found_in": "iron pyrite (trace), copper ores (trace), byproduct of zinc smelting"
+  },
+  {
+    "number": 82, "name": "Lead", "symbol": "Pb",
+    "group": 14, "period": 6, "mass": 207.2, "category": "post-transition metal",
+    "properties": ["soft dense metal", "low melting point (327°C)", "strong X-ray absorber"],
+    "uses": ["car batteries", "radiation shielding", "historical plumbing and paint"],
+    "fun_fact": "Some historians argue that widespread Roman lead poisoning from lead pipes and lead-lined wine vessels may have contributed to the decline of the Roman Empire.",
+    "found_in": "galena (PbS), anglesite, cerussite"
+  },
+  {
+    "number": 83, "name": "Bismuth", "symbol": "Bi",
+    "group": 15, "period": 6, "mass": 208.980, "category": "post-transition metal",
+    "properties": ["brittle pinkish-white metal", "low toxicity — safe for humans", "expands on solidifying"],
+    "uses": ["Pepto-Bismol (bismuth subsalicylate)", "lead-free solders", "iridescent decorative crystals"],
+    "fun_fact": "Bismuth crystals grown from melt form stunning hopper-shaped spirals with iridescent rainbow oxide colors — popular in amateur crystal growing.",
+    "found_in": "bismuthinite, native bismuth, byproduct of lead/copper smelting"
+  },
+  {
+    "number": 84, "name": "Polonium", "symbol": "Po",
+    "group": 16, "period": 6, "mass": 209, "category": "post-transition metal",
+    "properties": ["highly radioactive alpha emitter", "extremely rare in nature", "intense heat from decay"],
+    "uses": ["antistatic devices", "alpha particle research source", "nuclear warhead triggers (historical)"],
+    "fun_fact": "Just 1 microgram of polonium-210 is a lethal dose — it was used to assassinate former Russian spy Alexander Litvinenko in London in 2006.",
+    "found_in": "uranium ores (trace), nuclear reactors, cigarette smoke (trace)"
+  },
+  {
+    "number": 85, "name": "Astatine", "symbol": "At",
+    "group": 17, "period": 6, "mass": 210, "category": "halogen",
+    "properties": ["rarest naturally occurring element", "radioactive halogen", "properties between iodine and polonium"],
+    "uses": ["targeted alpha therapy for cancer (At-211)", "fundamental research only"],
+    "fun_fact": "The entire Earth's crust contains only about 28 grams of astatine at any given moment — it is the rarest natural element.",
+    "found_in": "uranium and thorium decay chains (trace)"
+  },
+  {
+    "number": 86, "name": "Radon", "symbol": "Rn",
+    "group": 18, "period": 6, "mass": 222, "category": "noble gas",
+    "properties": ["radioactive noble gas", "colorless and odorless", "heaviest noble gas"],
+    "uses": ["historical radiotherapy (sealed sources)", "earthquake prediction research", "radon geology tracing"],
+    "fun_fact": "Radon seeping into basements from soil and rock is the second leading cause of lung cancer after smoking — responsible for ~21,000 US deaths per year.",
+    "found_in": "radium decay in granite and uranium-bearing rocks"
+  },
+  {
+    "number": 87, "name": "Francium", "symbol": "Fr",
+    "group": 1, "period": 7, "mass": 223, "category": "alkali metal",
+    "properties": ["most unstable naturally occurring element", "most reactive alkali metal", "radioactive"],
+    "uses": ["fundamental atomic structure research only"],
+    "fun_fact": "At any given moment only 20–30 grams of francium exist naturally on Earth — it is continuously created and destroyed by radioactive decay.",
+    "found_in": "uranium/thorium ore (decay product), made in particle accelerators"
+  },
+  {
+    "number": 88, "name": "Radium", "symbol": "Ra",
+    "group": 2, "period": 7, "mass": 226, "category": "alkaline earth metal",
+    "properties": ["radioactive alkaline earth metal", "glows bluish-green in the dark", "mimics calcium in bone"],
+    "uses": ["historical cancer treatment", "radioluminescent paint (historical)", "radon gas production"],
+    "fun_fact": "Radium Girls — young women who painted watch dials with radium paint in the 1920s, told to lick their brushes to a point — suffered fatal radiation poisoning, sparking the first occupational safety laws.",
+    "found_in": "uranium ore (trace), pitchblende"
+  },
+  {
+    "number": 89, "name": "Actinium", "symbol": "Ac",
+    "group": "actinide", "period": 7, "mass": 227, "category": "actinide",
+    "properties": ["radioactive soft silvery-white metal", "glows blue in dark", "strong gamma emitter"],
+    "uses": ["targeted cancer therapy (Ac-225)", "neutron source in research", "thermoelectric generators"],
+    "fun_fact": "Actinium-225 is being investigated as a targeted alpha therapy — it can kill individual cancer cells from within after being attached to targeting antibodies.",
+    "found_in": "uranium ores (trace), nuclear reactors"
+  },
+  {
+    "number": 90, "name": "Thorium", "symbol": "Th",
+    "group": "actinide", "period": 7, "mass": 232.038, "category": "actinide",
+    "properties": ["radioactive dense metal", "3× more abundant than uranium", "fertile nuclear fuel"],
+    "uses": ["thorium nuclear reactors (experimental)", "historical gas mantles", "high-refractive-index optics"],
+    "fun_fact": "India is developing thorium molten salt reactors — thorium is 3× more abundant than uranium, produces less long-lived waste, and is far harder to weaponize.",
+    "found_in": "monazite sand, thorite, thorianite"
+  },
+  {
+    "number": 91, "name": "Protactinium", "symbol": "Pa",
+    "group": "actinide", "period": 7, "mass": 231.036, "category": "actinide",
+    "properties": ["dense silvery radioactive actinide", "rare — only ~500 kg ever extracted", "strong alpha emitter"],
+    "uses": ["nuclear research only", "dating ocean sediment cores"],
+    "fun_fact": "Less than 500 kg of protactinium have ever been extracted; its primary use is tracing ancient ocean circulation patterns in paleoceanography.",
+    "found_in": "uranium ores (trace)"
+  },
+  {
+    "number": 92, "name": "Uranium", "symbol": "U",
+    "group": "actinide", "period": 7, "mass": 238.029, "category": "actinide",
+    "properties": ["naturally radioactive", "densest natural element", "fissile U-235 is 0.7% of natural uranium"],
+    "uses": ["nuclear fuel for power plants", "nuclear weapons", "uranium glass (historical)"],
+    "fun_fact": "Natural background radiation from uranium in granite means living in a granite building exposes you to more radiation than working in a nuclear power plant.",
+    "found_in": "uraninite (pitchblende), carnotite, monazite"
+  },
+  {
+    "number": 93, "name": "Neptunium", "symbol": "Np",
+    "group": "actinide", "period": 7, "mass": 237, "category": "actinide",
+    "properties": ["silvery radioactive actinide", "fissile Np-237", "first transuranium element discovered"],
+    "uses": ["production of Pu-238 for spacecraft power", "nuclear weapons research"],
+    "fun_fact": "Neptunium-237 is transmuted to plutonium-238 in reactors — Pu-238 powers NASA's deep space probes including both Voyager spacecraft still traveling through interstellar space.",
+    "found_in": "uranium ores (trace), nuclear reactors"
+  },
+  {
+    "number": 94, "name": "Plutonium", "symbol": "Pu",
+    "group": "actinide", "period": 7, "mass": 244, "category": "actinide",
+    "properties": ["radioactive fissile element", "6 distinct allotropes", "warms to the touch from its own decay"],
+    "uses": ["nuclear weapons", "NASA deep space RTG power (Pu-238)", "nuclear fuel"],
+    "fun_fact": "Pu-238 has powered 27 NASA spacecraft since 1961; the Voyager probes launched in 1977 are still generating electricity from plutonium decay in interstellar space.",
+    "found_in": "uranium ores (trace), produced in nuclear reactors"
+  },
+  {
+    "number": 95, "name": "Americium", "symbol": "Am",
+    "group": "actinide", "period": 7, "mass": 243, "category": "actinide",
+    "properties": ["silvery radioactive actinide", "Am-241 alpha emitter", "glows faint blue in darkness"],
+    "uses": ["household smoke detectors (Am-241)", "cancer treatment research", "industrial thickness gauges"],
+    "fun_fact": "Every household smoke detector contains 0.9 micrograms of Americium-241 — it ionizes air to detect smoke particles, saving tens of thousands of lives annually.",
+    "found_in": "nuclear reactors (produced from plutonium)"
+  },
+  {
+    "number": 96, "name": "Curium", "symbol": "Cm",
+    "group": "actinide", "period": 7, "mass": 247, "category": "actinide",
+    "properties": ["radioactive actinide", "named after Marie and Pierre Curie", "intense heat from alpha decay"],
+    "uses": ["thermoelectric power sources", "APXS instrument on Mars rovers", "scientific research"],
+    "fun_fact": "Curium-244 powered the Alpha Proton X-ray Spectrometer on the Mars Pathfinder, Spirit, and Opportunity rovers, analyzing the chemical composition of Martian rocks.",
+    "found_in": "nuclear reactors only"
+  },
+  {
+    "number": 97, "name": "Berkelium", "symbol": "Bk",
+    "group": "actinide", "period": 7, "mass": 247, "category": "actinide",
+    "properties": ["radioactive actinide", "never found in nature", "silvery-white metal"],
+    "uses": ["fundamental research only", "target material for producing heavier elements"],
+    "fun_fact": "Berkelium-249 is bombarded with calcium-48 ions to create element 117 (Tennessine) — superheavy element discovery depends on berkelium as a target.",
+    "found_in": "particle accelerators only"
+  },
+  {
+    "number": 98, "name": "Californium", "symbol": "Cf",
+    "group": "actinide", "period": 7, "mass": 251, "category": "actinide",
+    "properties": ["radioactive actinide", "strongest neutron emitter of any known element", "extremely rare"],
+    "uses": ["neutron source for oil well logging", "nuclear reactor startup neutron source", "cancer neutron brachytherapy"],
+    "fun_fact": "Californium-252 costs ~$27 million per gram — only 8 grams are produced annually worldwide. It is used to start nuclear reactors and treat inoperable tumors.",
+    "found_in": "nuclear reactors and particle accelerators only"
+  },
+  {
+    "number": 99, "name": "Einsteinium", "symbol": "Es",
+    "group": "actinide", "period": 7, "mass": 252, "category": "actinide",
+    "properties": ["radioactive actinide", "named after Albert Einstein", "metallic"],
+    "uses": ["fundamental research only", "production of even heavier elements"],
+    "fun_fact": "Einsteinium was discovered in debris from the first hydrogen bomb test (Ivy Mike, 1952) by analyzing Pacific Ocean fallout — the discovery was classified for years.",
+    "found_in": "nuclear explosions (discovered), particle accelerators"
+  },
+  {
+    "number": 100, "name": "Fermium", "symbol": "Fm",
+    "group": "actinide", "period": 7, "mass": 257, "category": "actinide",
+    "properties": ["radioactive actinide", "named after Enrico Fermi", "no stable isotopes"],
+    "uses": ["fundamental research only"],
+    "fun_fact": "Fermium was also discovered in thermonuclear bomb test debris from Ivy Mike in 1952 — the discovery was classified during the Cold War arms race.",
+    "found_in": "nuclear reactors and particle accelerators only"
+  },
+  {
+    "number": 101, "name": "Mendelevium", "symbol": "Md",
+    "group": "actinide", "period": 7, "mass": 258, "category": "actinide",
+    "properties": ["radioactive actinide", "first element made one-atom-at-a-time", "named after Mendeleev"],
+    "uses": ["fundamental research only"],
+    "fun_fact": "Mendelevium was first created in 1955 by producing just 17 atoms — scientists had to chemically identify each individual atom to confirm the new element's existence.",
+    "found_in": "particle accelerators only"
+  },
+  {
+    "number": 102, "name": "Nobelium", "symbol": "No",
+    "group": "actinide", "period": 7, "mass": 259, "category": "actinide",
+    "properties": ["radioactive actinide", "most stable isotope lasts 58 minutes", "named after Alfred Nobel"],
+    "uses": ["fundamental research only"],
+    "fun_fact": "Nobelium was the subject of a Cold War scientific dispute — both Soviet and American teams claimed discovery; the Soviets were ultimately credited by IUPAC in 1992.",
+    "found_in": "particle accelerators only"
+  },
+  {
+    "number": 103, "name": "Lawrencium", "symbol": "Lr",
+    "group": "actinide", "period": 7, "mass": 262, "category": "actinide",
+    "properties": ["radioactive actinide", "last actinide element", "named after Ernest Lawrence"],
+    "uses": ["fundamental research only"],
+    "fun_fact": "A 2015 ionization energy measurement of lawrencium at RIKEN (Japan) confirmed predictions about relativistic electron effects in superheavy elements.",
+    "found_in": "particle accelerators only"
+  },
+  {
+    "number": 104, "name": "Rutherfordium", "symbol": "Rf",
+    "group": 4, "period": 7, "mass": 267, "category": "transition metal",
+    "properties": ["radioactive transactinide", "decays in seconds to minutes", "group 4 behavior"],
+    "uses": ["fundamental research only"],
+    "fun_fact": "Rutherfordium's chemistry has been confirmed to resemble zirconium and hafnium in group 4 — periodic table trends extend even to superheavy synthetic elements.",
+    "found_in": "particle accelerators only"
+  },
+  {
+    "number": 105, "name": "Dubnium", "symbol": "Db",
+    "group": 5, "period": 7, "mass": 268, "category": "transition metal",
+    "properties": ["radioactive transactinide", "group 5 element", "very short half-lives"],
+    "uses": ["fundamental research only"],
+    "fun_fact": "Dubnium was at the center of a Cold War naming dispute between the US (Hahnium) and Soviet scientists; IUPAC settled the controversy in 1997.",
+    "found_in": "particle accelerators only"
+  },
+  {
+    "number": 106, "name": "Seaborgium", "symbol": "Sg",
+    "group": 6, "period": 7, "mass": 271, "category": "transition metal",
+    "properties": ["radioactive transactinide", "group 6 element", "named after Glenn Seaborg"],
+    "uses": ["fundamental research only"],
+    "fun_fact": "Glenn Seaborg was the only person to have an element named after him while still alive — he co-discovered 10 elements and won the 1951 Nobel Prize in Chemistry.",
+    "found_in": "particle accelerators only"
+  },
+  {
+    "number": 107, "name": "Bohrium", "symbol": "Bh",
+    "group": 7, "period": 7, "mass": 272, "category": "transition metal",
+    "properties": ["radioactive transactinide", "group 7 element", "named after Niels Bohr"],
+    "uses": ["fundamental research only"],
+    "fun_fact": "Bohrium-270 has a half-life of ~61 seconds — long enough for researchers to perform limited chemical tests confirming it behaves like rhenium in group 7.",
+    "found_in": "particle accelerators only"
+  },
+  {
+    "number": 108, "name": "Hassium", "symbol": "Hs",
+    "group": 8, "period": 7, "mass": 270, "category": "transition metal",
+    "properties": ["radioactive transactinide", "group 8 element", "named after Hesse, Germany"],
+    "uses": ["fundamental research only"],
+    "fun_fact": "In 2002 hassium was shown to form HsO₄ behaving similarly to osmium tetroxide — confirming group 8 periodic trends extend to superheavy elements.",
+    "found_in": "particle accelerators only"
+  },
+  {
+    "number": 109, "name": "Meitnerium", "symbol": "Mt",
+    "group": 9, "period": 7, "mass": 278, "category": "unknown",
+    "properties": ["radioactive transactinide", "group 9 element", "named after Lise Meitner"],
+    "uses": ["fundamental research only"],
+    "fun_fact": "Meitnerium honors Lise Meitner, who co-discovered nuclear fission but was controversially excluded from the 1944 Nobel Prize — widely considered one of history's greatest scientific injustices.",
+    "found_in": "particle accelerators only"
+  },
+  {
+    "number": 110, "name": "Darmstadtium", "symbol": "Ds",
+    "group": 10, "period": 7, "mass": 281, "category": "unknown",
+    "properties": ["radioactive transactinide", "group 10 element", "named after Darmstadt, Germany"],
+    "uses": ["fundamental research only"],
+    "fun_fact": "Darmstadtium was first created at GSI Helmholtz Centre in 1994 using a nickel-64 beam hitting lead-208 — just 3 atoms were produced in the initial experiment.",
+    "found_in": "particle accelerators only"
+  },
+  {
+    "number": 111, "name": "Roentgenium", "symbol": "Rg",
+    "group": 11, "period": 7, "mass": 282, "category": "unknown",
+    "properties": ["radioactive transactinide", "group 11 element", "named after Wilhelm Röntgen"],
+    "uses": ["fundamental research only"],
+    "fun_fact": "Relativistic electron effects may make roentgenium chemically resemble gold — theoretical predictions suggest it should be more noble than expected from group 11.",
+    "found_in": "particle accelerators only"
+  },
+  {
+    "number": 112, "name": "Copernicium", "symbol": "Cn",
+    "group": 12, "period": 7, "mass": 285, "category": "transition metal",
+    "properties": ["radioactive transactinide", "group 12 element", "named after Copernicus"],
+    "uses": ["fundamental research only"],
+    "fun_fact": "Relativistic calculations predict copernicium may be a gas at room temperature — behaving like a noble gas rather than a metal, defying all group 12 trends.",
+    "found_in": "particle accelerators only"
+  },
+  {
+    "number": 113, "name": "Nihonium", "symbol": "Nh",
+    "group": 13, "period": 7, "mass": 286, "category": "unknown",
+    "properties": ["radioactive transactinide", "group 13 element", "first element discovered in Asia"],
+    "uses": ["fundamental research only"],
+    "fun_fact": "Nihonium was discovered by the RIKEN team in Japan after 9 years of experiments — the first element named by an Asian scientific team, after Nihon (Japan).",
+    "found_in": "particle accelerators only"
+  },
+  {
+    "number": 114, "name": "Flerovium", "symbol": "Fl",
+    "group": 14, "period": 7, "mass": 289, "category": "unknown",
+    "properties": ["radioactive transactinide", "group 14 element", "named after Flerov Laboratory"],
+    "uses": ["fundamental research only"],
+    "fun_fact": "Flerovium is predicted to be a volatile solid or gas due to relativistic effects — it may behave nothing like lead despite being in the same group.",
+    "found_in": "particle accelerators only"
+  },
+  {
+    "number": 115, "name": "Moscovium", "symbol": "Mc",
+    "group": 15, "period": 7, "mass": 290, "category": "unknown",
+    "properties": ["radioactive transactinide", "group 15 element", "named after Moscow Oblast"],
+    "uses": ["fundamental research only"],
+    "fun_fact": "Moscovium synthesized at JINR in Dubna decays to nihonium — tracing these decay chains maps out the predicted 'island of stability' for superheavy nuclei.",
+    "found_in": "particle accelerators only"
+  },
+  {
+    "number": 116, "name": "Livermorium", "symbol": "Lv",
+    "group": 16, "period": 7, "mass": 293, "category": "unknown",
+    "properties": ["radioactive transactinide", "group 16 element", "named after Lawrence Livermore Lab"],
+    "uses": ["fundamental research only"],
+    "fun_fact": "Livermorium was created in a US–Russian collaboration between Lawrence Livermore and JINR Dubna — a scientific partnership that has produced several new elements.",
+    "found_in": "particle accelerators only"
+  },
+  {
+    "number": 117, "name": "Tennessine", "symbol": "Ts",
+    "group": 17, "period": 7, "mass": 294, "category": "unknown",
+    "properties": ["radioactive transactinide", "group 17 element", "would be heaviest halogen if stable"],
+    "uses": ["fundamental research only"],
+    "fun_fact": "Tennessine was first synthesized in 2010, named for Tennessee in honor of Oak Ridge National Laboratory, Vanderbilt University, and the University of Tennessee.",
+    "found_in": "particle accelerators only"
+  },
+  {
+    "number": 118, "name": "Oganesson", "symbol": "Og",
+    "group": 18, "period": 7, "mass": 294, "category": "unknown",
+    "properties": ["heaviest known element", "group 18 element", "predicted to be a solid despite noble gas position"],
+    "uses": ["fundamental research only"],
+    "fun_fact": "Despite sitting in the noble gas group, relativistic quantum calculations predict oganesson should be a solid at room temperature — the ultimate breakdown of periodic table trends. Only 3–4 atoms have ever been made.",
+    "found_in": "particle accelerators only"
+  }
+]
