@@ -11,9 +11,10 @@ from constants import (
     BG, PANEL_BG, WHITE, BLACK, GOLD, TEAL, RED, GREEN, GRAY,
     HIGHLIGHT, PURPLE, ORANGE, PINK,
     FONT_SM, FONT_MD, FONT_LG, PIXEL_FONT,
-    INTERNAL_W, INTERNAL_H, SHAPES,
+    INTERNAL_W, INTERNAL_H, ITEMS,
     CATEGORY_COLORS, ROOM_PALETTE,
 )
+from sprites import draw_sprite, ITEMS as _SPRITE_ITEMS   # noqa: F811 (same list, avoids circ-import)
 
 # ---------------------------------------------------------------------------
 # Pre-generated ambient effects  (created once at import time)
@@ -299,15 +300,16 @@ def draw_palace_panel(surface, palace, cat, layout_params, offset_x=0, offset_y=
                     lerp_color(rc, WHITE, 0.4), width=2)
         pixel_corners(surface, front_rect, rc, size=4)
 
-        # Containers: shape + short description label
-        cell_w = max(1, fw // 3)
+        # Containers: sprite + short description label
+        cell_w  = max(1, fw // 3)
+        sp_size = max(10, min(16, cell_w - 4))
         for j, cont in enumerate(room.containers[:6]):
             ccx = fx + (j % 3) * cell_w + cell_w // 2
             ccy = fy + 14 + (j // 3) * max(1, (fh - 14) // 2)
             pulse = lerp_color(TEAL, WHITE, (math.sin(t * 2 + j) + 1) / 4)
-            draw_shape(surface, cont.shape, pulse, ccx, ccy, shape_size)
+            draw_sprite(surface, cont.shape, pulse, ccx, ccy, sp_size)
             text(surface, cont.description[:7].upper(),
-                 ccx, ccy + shape_size + 2,
+                 ccx, ccy + sp_size // 2 + 3,
                  max(6, min(8, cell_w // 5)),
                  lerp_color(TEAL, WHITE, 0.3), "center")
 
@@ -566,7 +568,7 @@ class ElementScreen(Screen):
     STAGE_DESC  = "desc"
     STAGE_SHAPE = "shape"
     STAGE_ROOM  = "room"
-    COLS = 5
+    COLS = 8    # items per row in the sprite picker
 
     def __init__(self, game, element):
         super().__init__(game)
@@ -597,13 +599,13 @@ class ElementScreen(Screen):
 
                 elif self.stage == self.STAGE_SHAPE:
                     if e.key == pygame.K_RIGHT:
-                        self.chosen_shape = (self.chosen_shape + 1) % len(SHAPES)
+                        self.chosen_shape = (self.chosen_shape + 1) % len(ITEMS)
                     elif e.key == pygame.K_LEFT:
-                        self.chosen_shape = (self.chosen_shape - 1) % len(SHAPES)
+                        self.chosen_shape = (self.chosen_shape - 1) % len(ITEMS)
                     elif e.key == pygame.K_DOWN:
-                        self.chosen_shape = (self.chosen_shape + self.COLS) % len(SHAPES)
+                        self.chosen_shape = (self.chosen_shape + self.COLS) % len(ITEMS)
                     elif e.key == pygame.K_UP:
-                        self.chosen_shape = (self.chosen_shape - self.COLS) % len(SHAPES)
+                        self.chosen_shape = (self.chosen_shape - self.COLS) % len(ITEMS)
                     elif e.key == pygame.K_RETURN:
                         self.stage = self.STAGE_ROOM
                         pygame.key.start_text_input()
@@ -622,7 +624,7 @@ class ElementScreen(Screen):
 
     def _commit(self, room_name):
         from palace import Container
-        c = Container(description=self.container_desc, shape=SHAPES[self.chosen_shape])
+        c = Container(description=self.container_desc, shape=ITEMS[self.chosen_shape])
         self.game.palace.store_element(self.element["name"], c, room_name)
 
     # --- drawing ---
@@ -709,25 +711,43 @@ class ElementScreen(Screen):
                  CARD_X + 10, INTERNAL_H - 30, FONT_SM, WHITE)
 
     def _draw_shape_picker(self, surface):
-        text(surface, "CHOOSE A CONTAINER SHAPE", MX, 12, FONT_MD, GOLD, "center")
-        cell = 54
-        ox   = (INTERNAL_W - self.COLS * cell) // 2
-        oy   = 40
-        for i, shape in enumerate(SHAPES):
-            row, col = divmod(i, self.COLS)
+        draw_bg(surface)
+        t    = get_t()
+        cell = 38          # cell size in internal px
+        sp   = 22          # sprite size inside cell
+        cols = self.COLS
+        rows = (len(ITEMS) + cols - 1) // cols
+        ox   = (INTERNAL_W - cols * cell) // 2
+        oy   = 32
+
+        title_c = lerp_color(GOLD, TEAL, (math.sin(t * 1.4) + 1) / 2)
+        text(surface, "CHOOSE YOUR CONTAINER", MX, 10, FONT_SM, title_c, "center")
+
+        for i, name in enumerate(ITEMS):
+            row, col = divmod(i, cols)
             cx = ox + col * cell + cell // 2
             cy = oy + row * cell + cell // 2
-            if i == self.chosen_shape:
-                pygame.draw.rect(surface, HIGHLIGHT,
+            selected = (i == self.chosen_shape)
+            # Highlight selected cell
+            if selected:
+                pulse_c = lerp_color(HIGHLIGHT, GOLD, (math.sin(t * 4) + 1) / 2)
+                pygame.draw.rect(surface, pulse_c,
                                  (cx - cell//2, cy - cell//2, cell, cell),
                                  border_radius=3)
-            draw_shape(surface, shape,
-                       TEAL if i == self.chosen_shape else GRAY,
-                       cx, cy, 15)
-        text(surface, SHAPES[self.chosen_shape].upper(),
-             MX, INTERNAL_H - 28, FONT_SM, WHITE, "center")
-        text(surface, "ARROWS     ENTER TO CONFIRM",
-             MX, INTERNAL_H - 12, FONT_SM, GRAY, "center")
+            else:
+                pygame.draw.rect(surface, PANEL_BG,
+                                 (cx - cell//2, cy - cell//2, cell, cell),
+                                 border_radius=2)
+            icon_c = WHITE if selected else GRAY
+            draw_sprite(surface, name, icon_c, cx, cy, sp)
+
+        # Selected item label
+        sel_name = ITEMS[self.chosen_shape]
+        glow_border(surface, (MX - 90, INTERNAL_H - 36, 180, 20), t, GOLD, TEAL, 1)
+        text(surface, sel_name.upper(), MX, INTERNAL_H - 32,
+             FONT_SM, GOLD, "center")
+        text(surface, "ARROWS  /  ENTER TO CONFIRM",
+             MX, INTERNAL_H - 14, FONT_SM - 2, GRAY, "center")
 
 
 # ---------------------------------------------------------------------------

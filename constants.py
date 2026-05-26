@@ -38,14 +38,24 @@ FONT_LG     = 28
 QUIZ_INTERVAL   = 5    # elements between quiz rounds
 QUIZ_CHOICES    = 4    # multiple choice options
 
-# --- Available container shapes ---
-SHAPES = [
-    "diamond", "circle",  "star",    "triangle", "square",
-    "pentagon","hexagon",  "heart",   "cross",    "crown",
-    "flask",   "crystal",  "gem",     "flame",    "moon",
-    "shield",  "bolt",     "orb",     "ring",     "cube",
-    "leaf",    "spiral",   "drop",    "chest",    "cage",
+# --- Available container items (names must match sprites.ITEM_TILES keys) ---
+# Imported lazily to avoid circular dependencies; ui.py imports from sprites directly.
+# This list is the authoritative order shown in the item picker.
+ITEMS = [
+    "chest",    "crate",    "barrel",   "lockbox",  "shelf",
+    "vase",     "cauldron", "pillar",   "cabinet",  "safe",
+    "bomb",     "sword",    "dagger",   "axe",      "staff",
+    "shield",   "gem",      "diamond",  "crystal",  "coin",
+    "medal",    "target",   "heart",    "skull",    "bones",
+    "flower",   "clover",   "blossom",  "key",      "padlock",
+    "potion",   "flask",    "vial",     "bottle",   "elixir",
+    "tonic",    "gear",     "sprocket", "hourglass","stopwatch",
+    "cross",    "question", "warning",  "dice",     "smiley",
+    "angry",    "portal",   "sun",
 ]
+
+# Keep SHAPES as an alias so old save files that stored geometric names degrade gracefully
+SHAPES = ITEMS
 
 # --- Category colours (used for element card header tinting) ---
 CATEGORY_COLORS = {
