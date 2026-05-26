@@ -188,7 +188,7 @@ DECO_SETS = [
     ["cauldron", "pillar",    "safe",     "cabinet"],
 ]
 
-_ROOMS_PW  = 182   # left panel width in RoomsScreen
+_ROOMS_PW  = 140   # left panel width in RoomsScreen
 _ROOMS_CH  = 38    # height of each room card in the left panel
 
 
@@ -680,6 +680,15 @@ class ElementScreen(Screen):
                     elif e.key == pygame.K_3:
                         self._commit("garage")
                         return {"action": "element_stored"}
+                    elif e.key == pygame.K_4:
+                        self._commit("living_room")
+                        return {"action": "element_stored"}
+                    elif e.key == pygame.K_5:
+                        self._commit("library")
+                        return {"action": "element_stored"}
+                    elif e.key == pygame.K_6:
+                        self._commit("bathroom")
+                        return {"action": "element_stored"}
 
             elif e.type == pygame.TEXTINPUT:
                 if self.stage in (self.STAGE_DESC, self.STAGE_ROOM):
@@ -770,10 +779,11 @@ class ElementScreen(Screen):
             text(surface, (self.input_text + "_")[:54],
                  CX + 10, INTERNAL_H - 42, FONT_SM, WHITE)
             if self.stage == self.STAGE_ROOM:
-                # Quick-pick hints for prebuilt rooms
                 hint_c = lerp_color(GRAY, WHITE, 0.4)
-                text(surface, "1=KITCHEN   2=BEDROOM   3=GARAGE",
-                     CC, INTERNAL_H - 16, FONT_SM - 2, hint_c, "center")
+                text(surface, "1=KITCHEN  2=BEDROOM  3=GARAGE",
+                     CC, INTERNAL_H - 24, FONT_SM - 2, hint_c, "center")
+                text(surface, "4=LIVING ROOM  5=LIBRARY  6=BATHROOM",
+                     CC, INTERNAL_H - 12, FONT_SM - 2, hint_c, "center")
 
     def _draw_shape_picker(self, surface):
         """Full 49×22 sprite sheet browser using the COLOURED sheet."""
