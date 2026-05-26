@@ -12,7 +12,89 @@ from constants import (
     HIGHLIGHT, PURPLE, ORANGE, PINK,
     FONT_SM, FONT_MD, FONT_LG, PIXEL_FONT,
     INTERNAL_W, INTERNAL_H, SHAPES,
+    CATEGORY_COLORS, ROOM_PALETTE,
 )
+
+# ---------------------------------------------------------------------------
+# Pre-generated ambient effects  (created once at import time)
+# ---------------------------------------------------------------------------
+
+_STARS = [
+    (int(random.random() * INTERNAL_W),
+     int(random.random() * INTERNAL_H),
+     random.random() * math.pi * 2,      # twinkle phase
+     random.random() * 0.5 + 0.5)        # twinkle speed
+    for _ in range(55)
+]
+
+_SCANLINES = None   # lazy-init on first draw (needs pygame display to be up)
+_floor_cache = {}   # (room_name, fw, fh) → pygame.Surface
+
+
+def _get_scanlines():
+    global _SCANLINES
+    if _SCANLINES is None:
+        _SCANLINES = pygame.Surface((INTERNAL_W, INTERNAL_H), pygame.SRCALPHA)
+        for y in range(0, INTERNAL_H, 3):
+            pygame.draw.line(_SCANLINES, (0, 0, 0, 45), (0, y), (INTERNAL_W, y))
+    return _SCANLINES
+
+
+def get_t():
+    """Seconds since pygame start — drives all animations."""
+    return pygame.time.get_ticks() / 1000.0
+
+
+def draw_bg(surface):
+    """Twinkling starfield background."""
+    surface.fill(BG)
+    t = get_t()
+    for sx, sy, phase, speed in _STARS:
+        bright = int((math.sin(t * speed * 2 + phase) + 1) / 2 * 180) + 40
+        c = (bright, bright, bright)
+        pygame.draw.circle(surface, c, (sx, sy), 1)
+
+
+def draw_scanlines(surface):
+    """Subtle CRT scanline overlay — call last before flip."""
+    surface.blit(_get_scanlines(), (0, 0))
+
+
+def lerp_color(a, b, alpha):
+    return tuple(int(a[i] + (b[i] - a[i]) * alpha) for i in range(3))
+
+
+def glow_border(surface, rect, t, c1=GOLD, c2=TEAL, width=2):
+    """Animated border that pulses between two colours."""
+    alpha = (math.sin(t * 3) + 1) / 2
+    col   = lerp_color(c1, c2, alpha)
+    r     = pygame.Rect(rect)
+    pygame.draw.rect(surface, col, r, width, border_radius=4)
+    dim   = lerp_color(col, BG, 0.6)
+    pygame.draw.rect(surface, dim, r.inflate(-width*2, -width*2), 1, border_radius=3)
+
+
+def category_color(cat_str):
+    return CATEGORY_COLORS.get(cat_str.lower(), GRAY)
+
+
+def room_color(name):
+    h = sum(ord(c) for c in name.lower())
+    return ROOM_PALETTE[h % len(ROOM_PALETTE)]
+
+
+def room_shape(name):
+    h = sum(ord(c) * (i+1) for i, c in enumerate(name.lower()))
+    return SHAPES[h % len(SHAPES)]
+
+
+def pixel_corners(surface, rect, colour, size=6):
+    """Draw chunky 8-bit style corner decorations on a rect."""
+    x, y, w, h = rect[0], rect[1], rect[2], rect[3]
+    corners = [(x, y), (x+w, y), (x, y+h), (x+w, y+h)]
+    for cx, cy in corners:
+        pygame.draw.rect(surface, colour,
+                         (cx - size//2, cy - size//2, size, size))
 
 MX = INTERNAL_W // 2    # 320  (horizontal centre)
 MY = INTERNAL_H // 2    # 180  (vertical centre)
@@ -84,26 +166,152 @@ MINI = dict(cols=2, rw=120, rh=68, pad=6, ox=8, oy=30)
 FULL = dict(cols=3, rw=188, rh=110, pad=8, ox=10, oy=36)
 
 
+# ---------------------------------------------------------------------------
+# 3-D room helpers  (floor patterns · math ornaments · fake isometric box)
+# ---------------------------------------------------------------------------
+
+def _draw_floor_pattern(surf, fw, fh, pattern, base_col):
+    """Render one of 5 tile patterns onto surf sized (fw, fh)."""
+    dark  = lerp_color(base_col, BG, 0.70)
+    light = lerp_color(base_col, WHITE, 0.10)
+    tile  = max(4, fw // 14)
+    if pattern == 0:            # checkerboard
+        for row in range(0, fh, tile):
+            for col in range(0, fw, tile):
+                c = light if (row // tile + col // tile) % 2 == 0 else dark
+                pygame.draw.rect(surf, c, (col, row, tile, tile))
+    elif pattern == 1:          # brick
+        for row in range(0, fh, tile):
+            off = tile // 2 if (row // tile) % 2 else 0
+            for col in range(-off, fw + tile, tile):
+                pygame.draw.rect(surf, dark,  (col, row, tile - 1, tile - 1))
+                pygame.draw.rect(surf, light, (col, row, tile - 1, tile - 1), 1)
+    elif pattern == 2:          # diagonal stripes
+        surf.fill(dark)
+        step = tile * 2
+        for i in range(-fh, fw + fh, step):
+            pygame.draw.line(surf, light, (i, 0), (i + fh, fh), max(1, tile // 2))
+    elif pattern == 3:          # dot grid
+        surf.fill(dark)
+        step = max(4, tile)
+        for row in range(step // 2, fh, step):
+            for col in range(step // 2, fw, step):
+                pygame.draw.circle(surf, light, (col, row), max(1, step // 4))
+    else:                       # stone grid
+        surf.fill(dark)
+        for row in range(0, fh + 1, tile):
+            pygame.draw.line(surf, light, (0, row), (fw, row), 1)
+        for col in range(0, fw + 1, tile):
+            pygame.draw.line(surf, light, (col, 0), (col, fh), 1)
+
+
+def _get_floor_surf(room_name, fw, fh, base_col):
+    key = (room_name, fw, fh)
+    if key not in _floor_cache:
+        h       = sum(ord(c) for c in room_name.lower())
+        pattern = h % 5
+        surf    = pygame.Surface((max(1, fw), max(1, fh)))
+        surf.fill(PANEL_BG)
+        _draw_floor_pattern(surf, fw, fh, pattern, base_col)
+        _floor_cache[key] = surf
+    return _floor_cache[key]
+
+
+def draw_room_ornament(surface, cx, cy, size, deco_type, color):
+    """Dim mathematical decoration inside a room (spirograph/Lissajous/rose/star)."""
+    dim  = lerp_color(color, BG, 0.78)
+    pts  = []
+    if deco_type == 0:          # spirograph
+        R, r, d = size, max(1, size // 3), size // 2
+        for i in range(200):
+            t2 = i * math.pi / 40
+            x  = int(cx + (R - r) * math.cos(t2) + d * math.cos((R - r) / r * t2))
+            y  = int(cy + (R - r) * math.sin(t2) - d * math.sin((R - r) / r * t2))
+            pts.append((x, y))
+    elif deco_type == 1:        # Lissajous (3:2)
+        for i in range(200):
+            t2 = i * math.pi / 50
+            pts.append((int(cx + size * math.sin(3 * t2 + math.pi / 4)),
+                        int(cy + int(size * 0.7) * math.sin(2 * t2))))
+    elif deco_type == 2:        # rose curve n=3
+        for i in range(200):
+            a  = i * math.pi / 40
+            rr = size * math.cos(3 * a)
+            pts.append((int(cx + rr * math.cos(a)), int(cy + rr * math.sin(a))))
+    else:                       # 7-point star polygon
+        pts = _star_pts(cx, cy, size, size // 2, 7)
+    if len(pts) >= 2:
+        pygame.draw.lines(surface, dim, deco_type == 3, pts, 1)
+
+
+def draw_3d_room(surface, rx, ry, rw, rh, base_col):
+    """Fake isometric 3-face box. Returns (front_rect, depth)."""
+    depth = max(4, rh // 6)
+    # Front face
+    front_rect = (rx, ry + depth, rw - depth, rh - depth)
+    pygame.draw.rect(surface, lerp_color(base_col, BG, 0.82), front_rect)
+    # Top face
+    pygame.draw.polygon(surface, lerp_color(base_col, WHITE, 0.22),
+                        [(rx,             ry + depth),
+                         (rx + depth,     ry),
+                         (rx + rw,        ry),
+                         (rx + rw - depth, ry + depth)])
+    # Side face (right)
+    pygame.draw.polygon(surface, lerp_color(base_col, BLACK, 0.55),
+                        [(rx + rw - depth, ry + depth),
+                         (rx + rw,         ry),
+                         (rx + rw,         ry + rh - depth),
+                         (rx + rw - depth, ry + rh)])
+    return front_rect, depth
+
+
 def draw_palace_panel(surface, palace, cat, layout_params, offset_x=0, offset_y=0):
-    """Draw rooms + containers + cat inside a given layout.
-    offset_x/y shift all drawing (used when panel is not at screen origin).
-    """
+    """Draw rooms + containers + cat. offset_x/y shift all drawing."""
     rooms  = palace.rooms
     layout = palace_layout(len(rooms), **layout_params)
+    t      = get_t()
+    shape_size = max(8, min(12, layout_params["rw"] // 12))
 
     for i, room in enumerate(rooms):
         rx, ry, rw, rh = layout[i]
         rx, ry = rx + offset_x, ry + offset_y
-        panel(surface, (rx, ry, rw, rh), PANEL_BG, GOLD)
-        text(surface, room.name.upper()[:14], rx + rw//2, ry + 5, FONT_SM - 2, GOLD, "center")
-        for j, cont in enumerate(room.containers[:6]):
-            cell_w = rw // 3
-            cx = rx + (j % 3) * cell_w + cell_w // 2
-            cy = ry + 22 + (j // 3) * (rh // 2 - 8)
-            shape_size = max(8, min(12, layout_params["rw"] // 12))
-            draw_shape(surface, cont.shape, TEAL, cx, cy, shape_size)
+        rc = room_color(room.name)
 
-    # Draw cat
+        # Fake-3D box shell
+        front_rect, depth = draw_3d_room(surface, rx, ry, rw, rh, rc)
+        fx, fy, fw, fh    = front_rect
+
+        if fw > 0 and fh > 0:
+            # Cached floor pattern inside front face
+            surface.blit(_get_floor_surf(room.name, fw, fh, rc), (fx, fy))
+            # Dim math ornament centred in front face
+            h = sum(ord(c) for c in room.name.lower())
+            draw_room_ornament(surface, fx + fw // 2, fy + fh // 2,
+                               min(fw, fh) // 3, h % 4, rc)
+
+        # Room name on top face
+        top_cx = rx + (rw + depth) // 2 - depth // 2
+        text(surface, room.name.upper()[:12], top_cx, ry + depth // 2,
+             max(6, FONT_SM - 3), lerp_color(rc, WHITE, 0.75), "center")
+
+        # Animated border + corner squares on front face
+        glow_border(surface, front_rect, t + i, rc,
+                    lerp_color(rc, WHITE, 0.4), width=2)
+        pixel_corners(surface, front_rect, rc, size=4)
+
+        # Containers: shape + short description label
+        cell_w = max(1, fw // 3)
+        for j, cont in enumerate(room.containers[:6]):
+            ccx = fx + (j % 3) * cell_w + cell_w // 2
+            ccy = fy + 14 + (j // 3) * max(1, (fh - 14) // 2)
+            pulse = lerp_color(TEAL, WHITE, (math.sin(t * 2 + j) + 1) / 4)
+            draw_shape(surface, cont.shape, pulse, ccx, ccy, shape_size)
+            text(surface, cont.description[:7].upper(),
+                 ccx, ccy + shape_size + 2,
+                 max(6, min(8, cell_w // 5)),
+                 lerp_color(TEAL, WHITE, 0.3), "center")
+
+    # Cat
     if cat is not None and layout:
         cx, cy = cat.pixel_pos(layout, offset_x, offset_y)
         draw_cat(surface, cx, cy, GOLD, cat.frame, cat.facing)
@@ -322,15 +530,31 @@ class HomeScreen(Screen):
         return None
 
     def draw(self, surface):
-        surface.fill(BG)
-        text(surface, "MEMORY", MX, 62, FONT_LG, GOLD, "center")
-        text(surface, "PALACE", MX, 100, FONT_LG, GOLD, "center")
+        draw_bg(surface)
+        t = get_t()
+        # Animated title
+        t1 = lerp_color(GOLD, TEAL,   (math.sin(t * 1.2) + 1) / 2)
+        t2 = lerp_color(TEAL, PURPLE, (math.sin(t * 1.2 + 1) + 1) / 2)
+        text(surface, "MEMORY", MX, 62,  FONT_LG, t1, "center")
+        text(surface, "PALACE", MX, 100, FONT_LG, t2, "center")
+        # Decorative divider
+        div_y = 140
+        for dx in range(0, INTERNAL_W, 8):
+            c = lerp_color(GOLD, BG, abs(math.sin(t * 2 + dx * 0.05)))
+            pygame.draw.rect(surface, c, (dx, div_y, 4, 2))
         for i, (label, _) in enumerate(self.MENU):
-            y   = 162 + i * 40
+            y   = 155 + i * 40
             col = TEAL if i == self.selected else GRAY
             pre = "> " if i == self.selected else "  "
             text(surface, pre + label, MX, y, FONT_MD, col, "center")
+            if i == self.selected:
+                # Animated selector brackets
+                bx = MX - 80
+                pulse = lerp_color(TEAL, GOLD, (math.sin(t * 4) + 1) / 2)
+                text(surface, "<<", bx - 30, y, FONT_MD, pulse, "center")
+                text(surface, ">>", bx + 190, y, FONT_MD, pulse, "center")
         text(surface, "UP / DOWN     ENTER", MX, INTERNAL_H - 18, FONT_SM, GRAY, "center")
+        draw_scanlines(surface)
 
 
 # ---------------------------------------------------------------------------
@@ -404,12 +628,13 @@ class ElementScreen(Screen):
     # --- drawing ---
 
     def draw(self, surface):
-        surface.fill(BG)
+        draw_bg(surface)
         if self.stage == self.STAGE_SHAPE:
             self._draw_shape_picker(surface)
         else:
             self._draw_left_palace(surface)
             self._draw_right_card(surface)
+        draw_scanlines(surface)
 
     def _draw_left_palace(self, surface):
         panel(surface, (2, 2, PALACE_W, INTERNAL_H - 4))
@@ -420,22 +645,56 @@ class ElementScreen(Screen):
             draw_palace_panel(surface, self.game.palace, self.game.cat, MINI, 2, 2)
 
     def _draw_right_card(self, surface):
-        el = self.element
-        panel(surface, (CARD_X, 2, CARD_W, INTERNAL_H - 4))
+        el   = self.element
+        t    = get_t()
+        cat  = el["category"]
+        cc   = category_color(cat)   # unique colour per element type
 
-        # element info
-        text(surface, el["name"].upper(), CARD_CX, 12, FONT_LG, GOLD, "center")
-        text(surface, el["symbol"],        CARD_X + 8, 12, FONT_LG, TEAL)
-        text(surface, f"#{el['number']}",  CARD_X + CARD_W - 8, 12, FONT_MD, GRAY, "topright")
+        # Panel background
+        pygame.draw.rect(surface, PANEL_BG,
+                         (CARD_X, 2, CARD_W, INTERNAL_H - 4), border_radius=4)
+
+        # Coloured header strip
+        pygame.draw.rect(surface, lerp_color(cc, BG, 0.6),
+                         (CARD_X, 2, CARD_W, 46), border_radius=4)
+
+        # Animated glow border keyed to category colour
+        glow_border(surface, (CARD_X, 2, CARD_W, INTERNAL_H - 4), t, cc,
+                    lerp_color(cc, WHITE, 0.5))
+        pixel_corners(surface, (CARD_X, 2, CARD_W, INTERNAL_H - 4), cc, size=6)
+
+        # Element info
+        text(surface, el["name"].upper(), CARD_CX, 10, FONT_LG, WHITE, "center")
+        text(surface, el["symbol"],       CARD_X + 8, 10, FONT_LG, cc)
+        text(surface, f"#{el['number']}", CARD_X + CARD_W - 8, 10,
+             FONT_MD, GRAY, "topright")
+
+        # Divider
+        pygame.draw.line(surface, lerp_color(cc, BG, 0.4),
+                         (CARD_X + 6, 50), (CARD_X + CARD_W - 6, 50), 1)
+
         text(surface, f"GROUP {el['group']}   PERIOD {el['period']}",
-             CARD_CX, 52, FONT_SM, WHITE, "center")
-        text(surface, f"MASS  {el['mass']}", CARD_CX, 72, FONT_SM, GRAY, "center")
-        text(surface, el["category"].upper(), CARD_CX, 92, FONT_SM, TEAL, "center")
-        for i, prop in enumerate(el["properties"][:2]):
-            wrap_text(surface, prop, CARD_X + 10, 116 + i * 38, CARD_W - 20,
-                      FONT_SM, WHITE, 20)
+             CARD_CX, 56, FONT_SM, WHITE, "center")
+        text(surface, f"MASS  {el['mass']}", CARD_CX, 76, FONT_SM, GRAY, "center")
+        text(surface, cat.upper(), CARD_CX, 96, FONT_SM, cc, "center")
 
-        # stage-specific bottom section
+        # Properties
+        for i, prop in enumerate(el["properties"][:2]):
+            wrap_text(surface, prop, CARD_X + 10, 120 + i * 38,
+                      CARD_W - 20, FONT_SM, WHITE, 20)
+
+        # Animated atomic number orbiting decoration
+        angle = t * 1.5
+        ox = CARD_X + CARD_W - 22
+        oy = 80
+        for orbit_r, orbit_speed, orbit_col in [
+            (10, 1.5, cc), (15, -1.0, lerp_color(cc, WHITE, 0.5))
+        ]:
+            ex = int(ox + orbit_r * math.cos(angle * orbit_speed))
+            ey = int(oy + orbit_r * math.sin(angle * orbit_speed) * 0.5)
+            pygame.draw.circle(surface, orbit_col, (ex, ey), 2)
+
+        # Stage-specific bottom section
         if self.stage == self.STAGE_INFO:
             text(surface, "ENTER TO CONTINUE",
                  CARD_CX, INTERNAL_H - 18, FONT_SM, GRAY, "center")
@@ -444,12 +703,10 @@ class ElementScreen(Screen):
                      if self.stage == self.STAGE_DESC
                      else "PLACE IN WHICH ROOM?")
             text(surface, label, CARD_X + 8, INTERNAL_H - 52, FONT_SM, GOLD)
-            panel(surface, (CARD_X + 4, INTERNAL_H - 34, CARD_W - 8, 26))
+            glow_border(surface, (CARD_X + 4, INTERNAL_H - 34, CARD_W - 8, 26),
+                        t, GOLD, TEAL, width=1)
             text(surface, (self.input_text + "_")[:34],
                  CARD_X + 10, INTERNAL_H - 30, FONT_SM, WHITE)
-        elif self.stage == self.STAGE_ROOM:
-            # preview already embedded above for room stage via _draw_preview_small
-            pass
 
     def _draw_shape_picker(self, surface):
         text(surface, "CHOOSE A CONTAINER SHAPE", MX, 12, FONT_MD, GOLD, "center")
@@ -485,14 +742,17 @@ class PalaceScreen(Screen):
         return None
 
     def draw(self, surface):
-        surface.fill(BG)
-        text(surface, "MEMORY PALACE", MX, 8, FONT_MD, GOLD, "center")
+        draw_bg(surface)
+        t = get_t()
+        title_c = lerp_color(GOLD, TEAL, (math.sin(t * 1.5) + 1) / 2)
+        text(surface, "MEMORY PALACE", MX, 8, FONT_MD, title_c, "center")
         palace = self.game.palace
         if not palace.rooms:
             text(surface, "PALACE IS EMPTY", MX, MY, FONT_SM, GRAY, "center")
         else:
             draw_palace_panel(surface, palace, self.game.cat, FULL, 0, 0)
         text(surface, "ESC = HOME", MX, INTERNAL_H - 12, FONT_SM, GRAY, "center")
+        draw_scanlines(surface)
 
 
 # ---------------------------------------------------------------------------
@@ -522,13 +782,22 @@ class FlashcardScreen(Screen):
         return None
 
     def draw(self, surface):
-        surface.fill(BG)
+        draw_bg(surface)
+        t  = get_t()
         el = self.elements[self.index]
-        text(surface, "FLASHCARD MODE", MX, 8, FONT_MD, GOLD, "center")
-        panel(surface, (14, 28, INTERNAL_W - 28, INTERNAL_H - 52))
-        text(surface, el["name"].upper(), MX,   42, FONT_LG, GOLD, "center")
-        text(surface, el["symbol"],        28,  42, FONT_LG, TEAL)
-        text(surface, f"#{el['number']}", INTERNAL_W - 28, 42, FONT_MD, GRAY, "topright")
+        cc = category_color(el["category"])
+        title_c = lerp_color(GOLD, TEAL, (math.sin(t * 1.5) + 1) / 2)
+        text(surface, "FLASHCARD MODE", MX, 8, FONT_MD, title_c, "center")
+        pygame.draw.rect(surface, PANEL_BG,
+                         (14, 28, INTERNAL_W - 28, INTERNAL_H - 52), border_radius=4)
+        pygame.draw.rect(surface, lerp_color(cc, BG, 0.6),
+                         (14, 28, INTERNAL_W - 28, 50), border_radius=4)
+        glow_border(surface, (14, 28, INTERNAL_W - 28, INTERNAL_H - 52), t, cc,
+                    lerp_color(cc, WHITE, 0.5))
+        pixel_corners(surface, (14, 28, INTERNAL_W - 28, INTERNAL_H - 52), cc, size=6)
+        text(surface, el["name"].upper(), MX,   36, FONT_LG, WHITE, "center")
+        text(surface, el["symbol"],        28,  36, FONT_LG, cc)
+        text(surface, f"#{el['number']}", INTERNAL_W - 28, 36, FONT_MD, GRAY, "topright")
         if not self.flipped:
             text(surface, "SPACE TO REVEAL", MX, MY, FONT_SM, GRAY, "center")
         else:
@@ -547,6 +816,7 @@ class FlashcardScreen(Screen):
                       INTERNAL_W - 56, FONT_SM - 2, PURPLE, 16)
         text(surface, f"{self.index+1}/{len(self.elements)}    < >   SPACE   ESC",
              MX, INTERNAL_H - 16, FONT_SM, GRAY, "center")
+        draw_scanlines(surface)
 
 
 # ---------------------------------------------------------------------------

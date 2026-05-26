@@ -47,6 +47,33 @@ SHAPES = [
     "leaf",    "spiral",   "drop",    "chest",    "cage",
 ]
 
+# --- Category colours (used for element card header tinting) ---
+CATEGORY_COLORS = {
+    "alkali metal":          (255,  90,  80),
+    "alkaline earth metal":  (255, 180,  60),
+    "transition metal":      (220, 210,  60),
+    "post-transition metal": ( 80, 210, 110),
+    "metalloid":             ( 60, 210, 210),
+    "nonmetal":              ( 80, 120, 255),
+    "halogen":               (190,  70, 255),
+    "noble gas":             (255,  80, 190),
+    "lanthanide":            (170, 110, 255),
+    "actinide":              (255, 120,  70),
+    "unknown":               (150, 150, 160),
+}
+
+# Room border palette (cycled by room-name hash)
+ROOM_PALETTE = [
+    (255, 200,  50),   # gold
+    ( 80, 220, 200),   # teal
+    (100,  80, 220),   # purple
+    (220, 140,  40),   # orange
+    (220, 100, 160),   # pink
+    ( 80, 200, 120),   # green
+    (180, 100, 255),   # violet
+    (100, 200, 255),   # sky
+]
+
 # --- Level definitions ---
 # Each level specifies which element fields the quiz tests
 LEVELS = [

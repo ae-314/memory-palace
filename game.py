@@ -70,6 +70,8 @@ class Game:
         """Process navigation signals returned by screens."""
         action = result.get("action")
         if action == "new_game":
+            self.palace = Palace()   # fresh palace, discards save
+            self.palace.save()
             self._next_element()
         elif action == "continue":
             self._next_element()
