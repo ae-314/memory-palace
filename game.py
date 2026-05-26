@@ -31,18 +31,20 @@ class Game:
 
     def update(self, events):
         import ui
-        # Global ESC: save palace and return to home from any gameplay screen
+        self.cat.update(self.palace)
+        # Let the active screen handle events first
+        if self.screen:
+            result = self.screen.update(events)
+            if result:
+                self._handle(result)
+                return
+        # Global ESC fallback — catches screens that don't handle it themselves
         for e in events:
             if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
                 if not isinstance(self.screen, ui.HomeScreen):
                     self.palace.save()
                     self._go_to("home")
                     return
-        self.cat.update(self.palace)
-        if self.screen:
-            result = self.screen.update(events)
-            if result:
-                self._handle(result)
 
     def draw(self):
         if self.screen:
@@ -55,12 +57,15 @@ class Game:
     def _go_to(self, screen_name, **kwargs):
         """Swap the active screen."""
         import ui
+        # Reset player control — PalaceScreen / RoomScreen re-enable in __init__
+        self.cat.player_controlled = False
         screens = {
             "home":      ui.HomeScreen,
             "element":   ui.ElementScreen,
             "palace":    ui.PalaceScreen,
             "flashcard": ui.FlashcardScreen,
             "quiz":      ui.QuizScreen,
+            "room":      ui.RoomScreen,
         }
         cls = screens.get(screen_name)
         if cls:
@@ -86,6 +91,10 @@ class Game:
                 self._next_element()
         elif action == "quiz_done":
             self._next_element()
+        elif action == "view_room":
+            self._go_to("room", room_idx=result.get("room_idx", 0))
+        elif action == "palace":
+            self._go_to("palace")
         elif action == "home":
             self._go_to("home")
         elif action == "quit":

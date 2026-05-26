@@ -87,7 +87,7 @@ def room_color(name):
 
 def room_shape(name):
     h = sum(ord(c) * (i+1) for i, c in enumerate(name.lower()))
-    return SHAPES[h % len(SHAPES)]
+    return ITEMS[h % len(ITEMS)]
 
 
 def pixel_corners(surface, rect, colour, size=6):
@@ -162,107 +162,137 @@ def palace_layout(num_rooms, cols, rw, rh, pad, ox, oy):
         for i in range(num_rooms)
     ]
 
-# Mini panel (left 288px)
-MINI = dict(cols=2, rw=120, rh=68, pad=6, ox=8, oy=30)
-# Full-screen palace view
-FULL = dict(cols=3, rw=188, rh=110, pad=8, ox=10, oy=36)
+# Mini panel (left 288px of ElementScreen)
+MINI = dict(cols=2, rw=132, rh=80, pad=5, ox=5, oy=28)
+# Full-screen palace view — 3 cols × 3 rows fit above the 50px minimap strip
+# Width:  8 + 3*190 + 2*5 = 588 ≤ 640 ✓
+# Height: 22 + 3*88 + 2*5 = 296 ≤ (360-52=308) ✓
+FULL = dict(cols=3, rw=190, rh=88, pad=5, ox=8, oy=22)
+
+# Ambient room-decoration sprites (from Kenney sheet, placed in room corners)
+DECO_SPRITES = [
+    "shelf", "vase", "cauldron", "pillar",
+    "t_14_6", "t_10_7", "t_9_7", "chest",
+    "t_14_5", "t_8_7",  "t_15_7", "t_13_7",
+]
 
 
 # ---------------------------------------------------------------------------
 # Top-down room renderer  (Stardew Valley-inspired 3/4 perspective)
 # ---------------------------------------------------------------------------
 
-_room_floor_cache: dict = {}   # (room_name, iw, ih, rc) → Surface
-
-
-def _build_floor(room_name: str, iw: int, ih: int, rc: tuple) -> pygame.Surface:
-    """Tile the Kenney floor sprite across the interior, tinted to room colour."""
-    key = (room_name, iw, ih, rc)
-    if key in _room_floor_cache:
-        return _room_floor_cache[key]
-
-    # Pick between two floor tile variants based on room hash
-    h  = sum(ord(c) for c in room_name.lower())
-    ft_col, ft_row = _sprites.FLOOR_TILE if h % 2 == 0 else _sprites.FLOOR_TILE2
-    tile_sz  = 10                              # tile display size (px)
-    tint     = lerp_color(rc, WHITE, 0.18)
-
-    surf = pygame.Surface((max(1, iw), max(1, ih)))
-    surf.fill(lerp_color(rc, BG, 0.78))
-
-    for ty in range(0, ih, tile_sz):
-        for tx in range(0, iw, tile_sz):
-            # alternate slight shade for grout-line effect
-            shade = lerp_color(tint, BG, 0.08) if (tx // tile_sz + ty // tile_sz) % 2 else tint
-            ft = _sprites.get_sprite(f"t_{ft_col}_{ft_row}", shade, tile_sz)
-            surf.blit(ft, (tx, ty))
-
-    _room_floor_cache[key] = surf
-    return surf
-
-
-def draw_topdown_room(surface, rx, ry, rw, rh, base_col, room_name, t=0.0):
+def draw_topdown_room(surface, rx, ry, rw, rh, base_col, room_name, t=0.0,
+                      highlighted=False):
     """
-    Stardew Valley-style top-down room with 3/4 perspective wall treatment.
-    Returns the interior rect (ix, iy, iw, ih).
+    Flat 8-bit top-down room.  Returns interior rect (ix, iy, iw, ih).
+    highlighted=True draws a gold selection border.
     """
-    wall_n  = max(10, rh // 4)    # north wall height (thick for 3/4 view)
-    wall_ew = max(3,  rw // 20)   # east/west wall width
-    wall_s  = max(3,  rh // 14)   # south/floor-edge height
+    wall_n  = max(8,  rh // 5)   # north wall (thick – 3/4 perspective)
+    wall_ew = max(2,  rw // 24)  # east/west walls (thin strips)
+    wall_s  = max(2,  rh // 18)  # south wall
 
-    # Colour palette
     col_wall  = lerp_color(base_col, BLACK, 0.42)
-    col_wallt = lerp_color(base_col, BLACK, 0.28)   # north wall top band (lighter)
-    col_trim  = lerp_color(base_col, WHITE, 0.55)
-    col_shad  = lerp_color(base_col, BLACK, 0.72)
-    col_door  = lerp_color(BG, base_col, 0.15)
+    col_wallt = lerp_color(base_col, BLACK, 0.26)
+    col_trim  = lerp_color(base_col, WHITE, 0.60)
+    col_shad  = lerp_color(base_col, BLACK, 0.75)
+    col_floor = lerp_color(base_col, BG,    0.74)
+    col_grid  = lerp_color(base_col, BG,    0.56)
+    col_door  = lerp_color(BG, base_col, 0.12)
 
     ix = rx + wall_ew
     iy = ry + wall_n
     iw = rw - wall_ew * 2
     ih = rh - wall_n - wall_s
 
-    # 1. Floor interior (Kenney tiles, cached)
+    # 1. Plain floor + subtle grid (NOT Kenney tiles — they obscure objects)
     if iw > 0 and ih > 0:
-        surface.blit(_build_floor(room_name, iw, ih, base_col), (ix, iy))
+        pygame.draw.rect(surface, col_floor, (ix, iy, iw, ih))
+        gs = max(8, min(16, iw // 6))   # grid step
+        for ty in range(iy, iy + ih + 1, gs):
+            pygame.draw.line(surface, col_grid, (ix, ty), (ix + iw, ty), 1)
+        for tx in range(ix, ix + iw + 1, gs):
+            pygame.draw.line(surface, col_grid, (tx, iy), (tx, iy + ih), 1)
 
-    # 2. North wall (two-tone: darker top band + lighter bottom)
+    # 2. North wall: two-tone + wainscoting
     pygame.draw.rect(surface, col_wall, (rx, ry, rw, wall_n))
-    band = max(3, wall_n // 3)
+    band = max(2, wall_n // 3)
     pygame.draw.rect(surface, col_wallt, (rx, ry + band, rw, wall_n - band))
+    wc = lerp_color(base_col, BLACK, 0.58)
+    for wx in range(rx + wall_ew + 8, rx + rw - wall_ew, 14):
+        pygame.draw.line(surface, wc, (wx, ry + 2), (wx, ry + wall_n - 3), 1)
+    pygame.draw.rect(surface, col_trim, (ix, ry + wall_n - 2, iw, 2))   # baseboard
+    pygame.draw.rect(surface, col_shad, (ix, iy, iw, 2))                # shadow
 
-    # Vertical wainscoting lines on north wall
-    wainsc_col = lerp_color(base_col, BLACK, 0.55)
-    for wx in range(rx + wall_ew + 6, rx + rw - wall_ew, 14):
-        pygame.draw.line(surface, wainsc_col, (wx, ry + 2), (wx, ry + wall_n - 2), 1)
+    # 3. Side walls
+    pygame.draw.rect(surface, col_wall, (rx,            iy, wall_ew, rh - wall_n))
+    pygame.draw.rect(surface, col_wall, (rx + rw - wall_ew, iy, wall_ew, rh - wall_n))
 
-    # Baseboard trim at bottom of north wall
-    pygame.draw.rect(surface, col_trim, (rx + wall_ew, ry + wall_n - 2, iw, 2))
-
-    # Shadow below north wall (depth illusion)
-    pygame.draw.rect(surface, col_shad, (rx + wall_ew, ry + wall_n, iw, 2))
-
-    # 3. East / West walls
-    pygame.draw.rect(surface, col_wall, (rx,            ry + wall_n, wall_ew, rh - wall_n))
-    pygame.draw.rect(surface, col_wall, (rx + rw - wall_ew, ry + wall_n, wall_ew, rh - wall_n))
-
-    # 4. South wall with door cutout
+    # 4. South wall + door cutout
     pygame.draw.rect(surface, col_wall, (rx, ry + rh - wall_s, rw, wall_s))
-    door_w = max(8, rw // 4)
-    door_x = rx + rw // 2 - door_w // 2
-    pygame.draw.rect(surface, col_door, (door_x, ry + rh - wall_s, door_w, wall_s))
+    door_w = max(6, rw // 5)
+    pygame.draw.rect(surface, col_door,
+                     (rx + rw // 2 - door_w // 2, ry + rh - wall_s, door_w, wall_s))
 
-    # 5. Room name on north wall
+    # 5. Ambient decoration sprite (top-right corner of interior)
+    if iw >= 18 and ih >= 18:
+        h    = sum(ord(c) for c in room_name.lower())
+        deco = DECO_SPRITES[h % len(DECO_SPRITES)]
+        dc   = lerp_color(base_col, WHITE, 0.30)
+        dsz  = max(10, min(16, iw // 6))
+        draw_sprite(surface, deco, dc, ix + iw - dsz // 2 - 2, iy + dsz // 2 + 2, dsz)
+
+    # 6. Room name on north wall
     text(surface, room_name.upper()[:12],
          rx + rw // 2, ry + wall_n // 2,
          max(6, FONT_SM - 3), col_trim, "center")
 
-    # 6. Animated glow border on north wall + corner squares
-    glow_border(surface, (rx, ry, rw, wall_n), t, base_col,
-                lerp_color(base_col, WHITE, 0.45), width=1)
-    pixel_corners(surface, (rx, ry, rw, rh), col_trim, size=3)
+    # 7. Border: gold if selected, subtle glow otherwise
+    if highlighted:
+        t2 = get_t()
+        pulse = lerp_color(GOLD, WHITE, (math.sin(t2 * 5) + 1) / 2)
+        pygame.draw.rect(surface, pulse, (rx, ry, rw, rh), 2)
+    else:
+        glow_border(surface, (rx, ry, rw, wall_n), t, base_col,
+                    lerp_color(base_col, WHITE, 0.45), width=1)
+        pixel_corners(surface, (rx, ry, rw, rh), col_trim, size=3)
 
     return (ix, iy, max(0, iw), max(0, ih))
+
+
+def draw_floor_map(surface, palace, cat, mx, my, mw, mh):
+    """Compact floor-plan minimap strip."""
+    rooms = palace.rooms
+    if not rooms:
+        return
+    n    = len(rooms)
+    cols = FULL["cols"]
+    rows = (n + cols - 1) // cols
+    cell_w = max(8, (mw - 4) // max(cols, 1))
+    cell_h = max(6, (mh - 4) // max(rows, 1))
+
+    pygame.draw.rect(surface, PANEL_BG, (mx, my, mw, mh))
+    pygame.draw.line(surface, lerp_color(GRAY, BG, 0.55), (mx, my), (mx + mw, my), 1)
+    text(surface, "MAP", mx + 3, my + 2, max(5, FONT_SM - 5), GRAY)
+
+    for i, room in enumerate(rooms):
+        col_i = i % cols
+        row_i = i // cols
+        rx = mx + 2 + col_i * cell_w
+        ry = my + 2 + row_i * cell_h
+        rw = cell_w - 2
+        rh = cell_h - 2
+        if rw < 2 or rh < 2:
+            continue
+        rc = room_color(room.name)
+        sel = (cat is not None and cat.room_idx == i)
+        pygame.draw.rect(surface, lerp_color(rc, BG, 0.70), (rx, ry, rw, rh))
+        bc  = GOLD if sel else lerp_color(rc, BG, 0.30)
+        pygame.draw.rect(surface, bc, (rx, ry, rw, rh), 1 + (1 if sel else 0))
+        # Cat dot
+        if sel:
+            t = get_t()
+            pc = lerp_color(GOLD, WHITE, (math.sin(t * 6) + 1) / 2)
+            pygame.draw.circle(surface, pc, (rx + rw // 2, ry + rh // 2), max(2, rh // 3))
 
 
 def draw_palace_panel(surface, palace, cat, layout_params, offset_x=0, offset_y=0):
@@ -270,37 +300,35 @@ def draw_palace_panel(surface, palace, cat, layout_params, offset_x=0, offset_y=
     rooms  = palace.rooms
     layout = palace_layout(len(rooms), **layout_params)
     t      = get_t()
+    sel    = cat.room_idx if (cat and cat.player_controlled) else -1
 
     for i, room in enumerate(rooms):
         rx, ry, rw, rh = layout[i]
         rx, ry = rx + offset_x, ry + offset_y
-        rc = room_color(room.name)
+        rc   = room_color(room.name)
+        high = (i == sel)
 
-        # Top-down Stardew-style room
-        ix, iy, iw, ih = draw_topdown_room(surface, rx, ry, rw, rh, rc, room.name, t + i)
+        ix, iy, iw, ih = draw_topdown_room(
+            surface, rx, ry, rw, rh, rc, room.name, t + i, highlighted=high)
 
         if iw > 0 and ih > 0 and room.containers:
-            # Place up to 6 container sprites in the interior
-            n_cont  = min(len(room.containers), 6)
-            cols_c  = min(3, n_cont)
-            rows_c  = (n_cont + cols_c - 1) // cols_c
-            cell_w  = iw // cols_c
-            cell_h  = ih // max(1, rows_c)
-            sp_size = max(10, min(14, min(cell_w, cell_h) - 4))
+            n_cont = min(len(room.containers), 6)
+            cols_c = min(3, n_cont)
+            rows_c = (n_cont + cols_c - 1) // cols_c
+            cell_w = max(1, iw // cols_c)
+            cell_h = max(1, ih // rows_c)
+            sp_sz  = max(10, min(16, min(cell_w, cell_h) - 6))
 
             for j, cont in enumerate(room.containers[:6]):
-                col_j = j % cols_c
-                row_j = j // cols_c
-                ccx   = ix + col_j * cell_w + cell_w // 2
-                ccy   = iy + row_j * cell_h + cell_h // 2
+                ccx = ix + (j % cols_c) * cell_w + cell_w // 2
+                ccy = iy + (j // cols_c) * cell_h + cell_h // 2
                 pulse = lerp_color(TEAL, WHITE, (math.sin(t * 2 + j) + 1) / 4)
-                draw_sprite(surface, cont.shape, pulse, ccx, ccy, sp_size)
+                draw_sprite(surface, cont.shape, pulse, ccx, ccy, sp_sz)
                 text(surface, cont.description[:6].upper(),
-                     ccx, ccy + sp_size // 2 + 2,
+                     ccx, ccy + sp_sz // 2 + 2,
                      max(6, min(8, cell_w // 6)),
-                     lerp_color(TEAL, WHITE, 0.35), "center")
+                     lerp_color(TEAL, WHITE, 0.40), "center")
 
-    # Cat
     if cat is not None and layout:
         cx, cy = cat.pixel_pos(layout, offset_x, offset_y)
         draw_cat(surface, cx, cy, GOLD, cat.frame, cat.facing)
@@ -312,19 +340,22 @@ def draw_palace_panel(surface, palace, cat, layout_params, offset_x=0, offset_y=
 
 class Cat:
     def __init__(self):
-        self.room_idx  = 0
-        self.local_x   = 0.5
-        self.local_y   = 0.7
-        self.frame     = 0
-        self.anim      = 0.0
-        self.wait      = 60
-        self.facing    = 1
+        self.room_idx          = 0
+        self.local_x           = 0.5
+        self.local_y           = 0.7
+        self.frame             = 0
+        self.anim              = 0.0
+        self.wait              = 60
+        self.facing            = 1
+        self.player_controlled = False
 
     def update(self, palace, dt=1/60):
         self.anim += dt
         if self.anim >= 0.28:
             self.frame ^= 1
             self.anim = 0.0
+        if self.player_controlled:
+            return          # keep animating but no random wandering
         if self.wait > 0:
             self.wait -= 1
         else:
@@ -335,10 +366,31 @@ class Cat:
             self.facing   = random.choice([-1, 1])
             self.wait     = random.randint(80, 160)
 
+    def move_room(self, direction, n_rooms, cols):
+        """Shift one step in direction within the room grid."""
+        if n_rooms == 0:
+            return
+        if direction == "right":
+            new_idx = self.room_idx + 1
+            self.facing = 1
+        elif direction == "left":
+            new_idx = self.room_idx - 1
+            self.facing = -1
+        elif direction == "down":
+            new_idx = self.room_idx + cols
+        elif direction == "up":
+            new_idx = self.room_idx - cols
+        else:
+            return
+        if 0 <= new_idx < n_rooms:
+            self.room_idx = new_idx
+
     def pixel_pos(self, layout, ox=0, oy=0):
         if not layout or self.room_idx >= len(layout):
             return (ox + 50, oy + 100)
         rx, ry, rw, rh = layout[self.room_idx]
+        if self.player_controlled:
+            return (int(rx + rw * 0.50), int(ry + rh * 0.60))
         return (int(rx + self.local_x * rw), int(ry + self.local_y * rh))
 
 
@@ -750,24 +802,190 @@ class ElementScreen(Screen):
 # ---------------------------------------------------------------------------
 
 class PalaceScreen(Screen):
+    _MAP_H = 50   # minimap strip height at bottom
+
+    def __init__(self, game):
+        super().__init__(game)
+        game.cat.player_controlled = True
+        n = len(game.palace.rooms)
+        if n > 0:
+            game.cat.room_idx = max(0, min(game.cat.room_idx, n - 1))
+
     def update(self, events):
+        cat    = self.game.cat
+        n      = len(self.game.palace.rooms)
+        cols   = FULL["cols"]
         for e in events:
-            if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
-                return {"action": "home"}
+            if e.type == pygame.KEYDOWN:
+                if e.key == pygame.K_ESCAPE:
+                    return {"action": "home"}
+                elif e.key == pygame.K_RIGHT:
+                    cat.move_room("right", n, cols)
+                elif e.key == pygame.K_LEFT:
+                    cat.move_room("left", n, cols)
+                elif e.key == pygame.K_DOWN:
+                    cat.move_room("down", n, cols)
+                elif e.key == pygame.K_UP:
+                    cat.move_room("up", n, cols)
+                elif e.key in (pygame.K_RETURN, pygame.K_SPACE):
+                    if n > 0:
+                        return {"action": "view_room", "room_idx": cat.room_idx}
         return None
 
     def draw(self, surface):
         draw_bg(surface)
-        t = get_t()
+        t       = get_t()
+        palace  = self.game.palace
+        map_y   = INTERNAL_H - self._MAP_H
+
         title_c = lerp_color(GOLD, TEAL, (math.sin(t * 1.5) + 1) / 2)
-        text(surface, "MEMORY PALACE", MX, 8, FONT_MD, title_c, "center")
-        palace = self.game.palace
+        text(surface, "MEMORY PALACE", MX, 7, FONT_MD, title_c, "center")
+
         if not palace.rooms:
-            text(surface, "PALACE IS EMPTY", MX, MY, FONT_SM, GRAY, "center")
+            text(surface, "PALACE IS EMPTY — ADD AN ELEMENT FIRST",
+                 MX, MY, FONT_SM, GRAY, "center")
         else:
             draw_palace_panel(surface, palace, self.game.cat, FULL, 0, 0)
-        text(surface, "ESC = HOME", MX, INTERNAL_H - 12, FONT_SM, GRAY, "center")
+            draw_floor_map(surface, palace, self.game.cat,
+                           0, map_y, INTERNAL_W, self._MAP_H - 14)
+
+        text(surface, "ARROWS MOVE  ENTER INSPECT  ESC HOME",
+             MX, INTERNAL_H - 10, FONT_SM - 2, GRAY, "center")
         draw_scanlines(surface)
+
+
+# ---------------------------------------------------------------------------
+# Room Inspection Screen  (zoomed view: full room + all containers)
+# ---------------------------------------------------------------------------
+
+class RoomScreen(Screen):
+    """Full-screen zoom into one room — see every container and its element."""
+    _HDR_H = 22   # header height
+    _MAP_H = 46   # minimap strip at bottom
+
+    def __init__(self, game, room_idx=0):
+        super().__init__(game)
+        game.cat.player_controlled = True
+        self.room_idx = max(0, min(room_idx, len(game.palace.rooms) - 1))
+        game.cat.room_idx = self.room_idx
+        self.cont_idx = 0
+
+    # ---- navigation ----
+
+    def update(self, events):
+        palace = self.game.palace
+        rooms  = palace.rooms
+        if not rooms:
+            return {"action": "palace"}
+        room   = rooms[self.room_idx]
+        n_cont = len(room.containers)
+        for e in events:
+            if e.type == pygame.KEYDOWN:
+                if e.key == pygame.K_ESCAPE:
+                    return {"action": "palace"}
+                elif e.key == pygame.K_RIGHT:
+                    if n_cont > 0:
+                        self.cont_idx = (self.cont_idx + 1) % n_cont
+                elif e.key == pygame.K_LEFT:
+                    if n_cont > 0:
+                        self.cont_idx = (self.cont_idx - 1) % n_cont
+                elif e.key in (pygame.K_DOWN, pygame.K_s):
+                    nr = min(len(rooms) - 1, self.room_idx + 1)
+                    if nr != self.room_idx:
+                        self.room_idx = nr
+                        self.game.cat.room_idx = nr
+                        self.cont_idx = 0
+                elif e.key in (pygame.K_UP, pygame.K_w):
+                    nr = max(0, self.room_idx - 1)
+                    if nr != self.room_idx:
+                        self.room_idx = nr
+                        self.game.cat.room_idx = nr
+                        self.cont_idx = 0
+        return None
+
+    # ---- drawing ----
+
+    def draw(self, surface):
+        draw_bg(surface)
+        t      = get_t()
+        palace = self.game.palace
+        rooms  = palace.rooms
+        if not rooms:
+            text(surface, "PALACE IS EMPTY", MX, MY, FONT_SM, GRAY, "center")
+            draw_scanlines(surface)
+            return
+
+        room = rooms[self.room_idx]
+        rc   = room_color(room.name)
+
+        # --- Room area (fills between header and minimap) ---
+        rx = 4
+        ry = self._HDR_H
+        rw = INTERNAL_W - 8
+        rh = INTERNAL_H - self._HDR_H - self._MAP_H - 4
+        ix, iy, iw, ih = draw_topdown_room(
+            surface, rx, ry, rw, rh, rc, room.name, t, highlighted=False)
+
+        # --- Containers ---
+        if iw > 0 and ih > 0 and room.containers:
+            self._draw_containers(surface, room, ix, iy, iw, ih, t)
+
+        # --- Header bar ---
+        title_c = lerp_color(rc, WHITE, 0.75)
+        text(surface, room.name.upper(), MX, 5, FONT_MD, title_c, "center")
+        text(surface, f"{self.room_idx+1}/{len(rooms)}",
+             INTERNAL_W - 6, 5, FONT_SM, GRAY, "topright")
+
+        # --- Minimap ---
+        map_y = INTERNAL_H - self._MAP_H
+        draw_floor_map(surface, palace, self.game.cat,
+                       0, map_y, INTERNAL_W, self._MAP_H - 12)
+        text(surface, "< > CONTAINER   W/S ROOM   ESC BACK",
+             MX, INTERNAL_H - 10, FONT_SM - 2, GRAY, "center")
+        draw_scanlines(surface)
+
+    def _draw_containers(self, surface, room, ix, iy, iw, ih, t):
+        """Lay out containers in a grid inside the room interior."""
+        conts  = room.containers
+        n      = len(conts)
+        cols_c = min(6, n)
+        rows_c = (n + cols_c - 1) // cols_c
+        cell_w = max(1, iw // cols_c)
+        cell_h = max(1, ih // rows_c)
+        sp_sz  = max(22, min(32, min(cell_w, cell_h) - 18))
+
+        for j, cont in enumerate(conts):
+            col_j = j % cols_c
+            row_j = j // cols_c
+            ccx   = ix + col_j * cell_w + cell_w // 2
+            ccy   = iy + row_j * cell_h + max(sp_sz, cell_h // 3)
+            sel   = (j == self.cont_idx)
+
+            # Sprite
+            pulse   = lerp_color(TEAL, WHITE, (math.sin(t * 2 + j) + 1) / 4)
+            spr_col = lerp_color(GOLD, WHITE, 0.30) if sel else pulse
+            draw_sprite(surface, cont.shape, spr_col, ccx, ccy, sp_sz)
+
+            # Selection box
+            if sel:
+                bx = ccx - sp_sz // 2 - 3
+                by = ccy - sp_sz // 2 - 3
+                bs = sp_sz + 6
+                pulse_c = lerp_color(GOLD, WHITE, (math.sin(t * 6) + 1) / 2)
+                pygame.draw.rect(surface, pulse_c, (bx, by, bs, bs), 1,
+                                 border_radius=2)
+
+            # Description label
+            desc_y = ccy + sp_sz // 2 + 3
+            text(surface, cont.description[:12].upper(),
+                 ccx, desc_y, max(5, FONT_SM - 2),
+                 GOLD if sel else TEAL, "center")
+
+            # Element names (one per line, small font)
+            for k, el_name in enumerate(cont.elements[:3]):
+                text(surface, el_name[:10].upper(),
+                     ccx, desc_y + 10 + k * 9,
+                     max(4, FONT_SM - 3), WHITE, "center")
 
 
 # ---------------------------------------------------------------------------
