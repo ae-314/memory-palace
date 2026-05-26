@@ -14,7 +14,8 @@ from constants import (
     INTERNAL_W, INTERNAL_H, ITEMS,
     CATEGORY_COLORS, ROOM_PALETTE,
 )
-from sprites import draw_sprite, ITEMS as _SPRITE_ITEMS   # noqa: F811 (same list, avoids circ-import)
+import sprites as _sprites
+from sprites import draw_sprite, get_colored_tile, tile_key, TILE_COLS, TILE_ROWS
 
 # ---------------------------------------------------------------------------
 # Pre-generated ambient effects  (created once at import time)
@@ -168,102 +169,100 @@ FULL = dict(cols=3, rw=188, rh=110, pad=8, ox=10, oy=36)
 
 
 # ---------------------------------------------------------------------------
-# 3-D room helpers  (floor patterns · math ornaments · fake isometric box)
+# Top-down room renderer  (Stardew Valley-inspired 3/4 perspective)
 # ---------------------------------------------------------------------------
 
-def _draw_floor_pattern(surf, fw, fh, pattern, base_col):
-    """Render one of 5 tile patterns onto surf sized (fw, fh)."""
-    dark  = lerp_color(base_col, BG, 0.70)
-    light = lerp_color(base_col, WHITE, 0.10)
-    tile  = max(4, fw // 14)
-    if pattern == 0:            # checkerboard
-        for row in range(0, fh, tile):
-            for col in range(0, fw, tile):
-                c = light if (row // tile + col // tile) % 2 == 0 else dark
-                pygame.draw.rect(surf, c, (col, row, tile, tile))
-    elif pattern == 1:          # brick
-        for row in range(0, fh, tile):
-            off = tile // 2 if (row // tile) % 2 else 0
-            for col in range(-off, fw + tile, tile):
-                pygame.draw.rect(surf, dark,  (col, row, tile - 1, tile - 1))
-                pygame.draw.rect(surf, light, (col, row, tile - 1, tile - 1), 1)
-    elif pattern == 2:          # diagonal stripes
-        surf.fill(dark)
-        step = tile * 2
-        for i in range(-fh, fw + fh, step):
-            pygame.draw.line(surf, light, (i, 0), (i + fh, fh), max(1, tile // 2))
-    elif pattern == 3:          # dot grid
-        surf.fill(dark)
-        step = max(4, tile)
-        for row in range(step // 2, fh, step):
-            for col in range(step // 2, fw, step):
-                pygame.draw.circle(surf, light, (col, row), max(1, step // 4))
-    else:                       # stone grid
-        surf.fill(dark)
-        for row in range(0, fh + 1, tile):
-            pygame.draw.line(surf, light, (0, row), (fw, row), 1)
-        for col in range(0, fw + 1, tile):
-            pygame.draw.line(surf, light, (col, 0), (col, fh), 1)
+_room_floor_cache: dict = {}   # (room_name, iw, ih, rc) → Surface
 
 
-def _get_floor_surf(room_name, fw, fh, base_col):
-    key = (room_name, fw, fh)
-    if key not in _floor_cache:
-        h       = sum(ord(c) for c in room_name.lower())
-        pattern = h % 5
-        surf    = pygame.Surface((max(1, fw), max(1, fh)))
-        surf.fill(PANEL_BG)
-        _draw_floor_pattern(surf, fw, fh, pattern, base_col)
-        _floor_cache[key] = surf
-    return _floor_cache[key]
+def _build_floor(room_name: str, iw: int, ih: int, rc: tuple) -> pygame.Surface:
+    """Tile the Kenney floor sprite across the interior, tinted to room colour."""
+    key = (room_name, iw, ih, rc)
+    if key in _room_floor_cache:
+        return _room_floor_cache[key]
+
+    # Pick between two floor tile variants based on room hash
+    h  = sum(ord(c) for c in room_name.lower())
+    ft_col, ft_row = _sprites.FLOOR_TILE if h % 2 == 0 else _sprites.FLOOR_TILE2
+    tile_sz  = 10                              # tile display size (px)
+    tint     = lerp_color(rc, WHITE, 0.18)
+
+    surf = pygame.Surface((max(1, iw), max(1, ih)))
+    surf.fill(lerp_color(rc, BG, 0.78))
+
+    for ty in range(0, ih, tile_sz):
+        for tx in range(0, iw, tile_sz):
+            # alternate slight shade for grout-line effect
+            shade = lerp_color(tint, BG, 0.08) if (tx // tile_sz + ty // tile_sz) % 2 else tint
+            ft = _sprites.get_sprite(f"t_{ft_col}_{ft_row}", shade, tile_sz)
+            surf.blit(ft, (tx, ty))
+
+    _room_floor_cache[key] = surf
+    return surf
 
 
-def draw_room_ornament(surface, cx, cy, size, deco_type, color):
-    """Dim mathematical decoration inside a room (spirograph/Lissajous/rose/star)."""
-    dim  = lerp_color(color, BG, 0.78)
-    pts  = []
-    if deco_type == 0:          # spirograph
-        R, r, d = size, max(1, size // 3), size // 2
-        for i in range(200):
-            t2 = i * math.pi / 40
-            x  = int(cx + (R - r) * math.cos(t2) + d * math.cos((R - r) / r * t2))
-            y  = int(cy + (R - r) * math.sin(t2) - d * math.sin((R - r) / r * t2))
-            pts.append((x, y))
-    elif deco_type == 1:        # Lissajous (3:2)
-        for i in range(200):
-            t2 = i * math.pi / 50
-            pts.append((int(cx + size * math.sin(3 * t2 + math.pi / 4)),
-                        int(cy + int(size * 0.7) * math.sin(2 * t2))))
-    elif deco_type == 2:        # rose curve n=3
-        for i in range(200):
-            a  = i * math.pi / 40
-            rr = size * math.cos(3 * a)
-            pts.append((int(cx + rr * math.cos(a)), int(cy + rr * math.sin(a))))
-    else:                       # 7-point star polygon
-        pts = _star_pts(cx, cy, size, size // 2, 7)
-    if len(pts) >= 2:
-        pygame.draw.lines(surface, dim, deco_type == 3, pts, 1)
+def draw_topdown_room(surface, rx, ry, rw, rh, base_col, room_name, t=0.0):
+    """
+    Stardew Valley-style top-down room with 3/4 perspective wall treatment.
+    Returns the interior rect (ix, iy, iw, ih).
+    """
+    wall_n  = max(10, rh // 4)    # north wall height (thick for 3/4 view)
+    wall_ew = max(3,  rw // 20)   # east/west wall width
+    wall_s  = max(3,  rh // 14)   # south/floor-edge height
 
+    # Colour palette
+    col_wall  = lerp_color(base_col, BLACK, 0.42)
+    col_wallt = lerp_color(base_col, BLACK, 0.28)   # north wall top band (lighter)
+    col_trim  = lerp_color(base_col, WHITE, 0.55)
+    col_shad  = lerp_color(base_col, BLACK, 0.72)
+    col_door  = lerp_color(BG, base_col, 0.15)
 
-def draw_3d_room(surface, rx, ry, rw, rh, base_col):
-    """Fake isometric 3-face box. Returns (front_rect, depth)."""
-    depth = max(4, rh // 6)
-    # Front face
-    front_rect = (rx, ry + depth, rw - depth, rh - depth)
-    pygame.draw.rect(surface, lerp_color(base_col, BG, 0.82), front_rect)
-    # Top face
-    pygame.draw.polygon(surface, lerp_color(base_col, WHITE, 0.22),
-                        [(rx,             ry + depth),
-                         (rx + depth,     ry),
-                         (rx + rw,        ry),
-                         (rx + rw - depth, ry + depth)])
-    # Side face (right)
-    pygame.draw.polygon(surface, lerp_color(base_col, BLACK, 0.55),
-                        [(rx + rw - depth, ry + depth),
-                         (rx + rw,         ry),
-                         (rx + rw,         ry + rh - depth),
-                         (rx + rw - depth, ry + rh)])
-    return front_rect, depth
+    ix = rx + wall_ew
+    iy = ry + wall_n
+    iw = rw - wall_ew * 2
+    ih = rh - wall_n - wall_s
+
+    # 1. Floor interior (Kenney tiles, cached)
+    if iw > 0 and ih > 0:
+        surface.blit(_build_floor(room_name, iw, ih, base_col), (ix, iy))
+
+    # 2. North wall (two-tone: darker top band + lighter bottom)
+    pygame.draw.rect(surface, col_wall, (rx, ry, rw, wall_n))
+    band = max(3, wall_n // 3)
+    pygame.draw.rect(surface, col_wallt, (rx, ry + band, rw, wall_n - band))
+
+    # Vertical wainscoting lines on north wall
+    wainsc_col = lerp_color(base_col, BLACK, 0.55)
+    for wx in range(rx + wall_ew + 6, rx + rw - wall_ew, 14):
+        pygame.draw.line(surface, wainsc_col, (wx, ry + 2), (wx, ry + wall_n - 2), 1)
+
+    # Baseboard trim at bottom of north wall
+    pygame.draw.rect(surface, col_trim, (rx + wall_ew, ry + wall_n - 2, iw, 2))
+
+    # Shadow below north wall (depth illusion)
+    pygame.draw.rect(surface, col_shad, (rx + wall_ew, ry + wall_n, iw, 2))
+
+    # 3. East / West walls
+    pygame.draw.rect(surface, col_wall, (rx,            ry + wall_n, wall_ew, rh - wall_n))
+    pygame.draw.rect(surface, col_wall, (rx + rw - wall_ew, ry + wall_n, wall_ew, rh - wall_n))
+
+    # 4. South wall with door cutout
+    pygame.draw.rect(surface, col_wall, (rx, ry + rh - wall_s, rw, wall_s))
+    door_w = max(8, rw // 4)
+    door_x = rx + rw // 2 - door_w // 2
+    pygame.draw.rect(surface, col_door, (door_x, ry + rh - wall_s, door_w, wall_s))
+
+    # 5. Room name on north wall
+    text(surface, room_name.upper()[:12],
+         rx + rw // 2, ry + wall_n // 2,
+         max(6, FONT_SM - 3), col_trim, "center")
+
+    # 6. Animated glow border on north wall + corner squares
+    glow_border(surface, (rx, ry, rw, wall_n), t, base_col,
+                lerp_color(base_col, WHITE, 0.45), width=1)
+    pixel_corners(surface, (rx, ry, rw, rh), col_trim, size=3)
+
+    return (ix, iy, max(0, iw), max(0, ih))
 
 
 def draw_palace_panel(surface, palace, cat, layout_params, offset_x=0, offset_y=0):
@@ -271,47 +270,35 @@ def draw_palace_panel(surface, palace, cat, layout_params, offset_x=0, offset_y=
     rooms  = palace.rooms
     layout = palace_layout(len(rooms), **layout_params)
     t      = get_t()
-    shape_size = max(8, min(12, layout_params["rw"] // 12))
 
     for i, room in enumerate(rooms):
         rx, ry, rw, rh = layout[i]
         rx, ry = rx + offset_x, ry + offset_y
         rc = room_color(room.name)
 
-        # Fake-3D box shell
-        front_rect, depth = draw_3d_room(surface, rx, ry, rw, rh, rc)
-        fx, fy, fw, fh    = front_rect
+        # Top-down Stardew-style room
+        ix, iy, iw, ih = draw_topdown_room(surface, rx, ry, rw, rh, rc, room.name, t + i)
 
-        if fw > 0 and fh > 0:
-            # Cached floor pattern inside front face
-            surface.blit(_get_floor_surf(room.name, fw, fh, rc), (fx, fy))
-            # Dim math ornament centred in front face
-            h = sum(ord(c) for c in room.name.lower())
-            draw_room_ornament(surface, fx + fw // 2, fy + fh // 2,
-                               min(fw, fh) // 3, h % 4, rc)
+        if iw > 0 and ih > 0 and room.containers:
+            # Place up to 6 container sprites in the interior
+            n_cont  = min(len(room.containers), 6)
+            cols_c  = min(3, n_cont)
+            rows_c  = (n_cont + cols_c - 1) // cols_c
+            cell_w  = iw // cols_c
+            cell_h  = ih // max(1, rows_c)
+            sp_size = max(10, min(14, min(cell_w, cell_h) - 4))
 
-        # Room name on top face
-        top_cx = rx + (rw + depth) // 2 - depth // 2
-        text(surface, room.name.upper()[:12], top_cx, ry + depth // 2,
-             max(6, FONT_SM - 3), lerp_color(rc, WHITE, 0.75), "center")
-
-        # Animated border + corner squares on front face
-        glow_border(surface, front_rect, t + i, rc,
-                    lerp_color(rc, WHITE, 0.4), width=2)
-        pixel_corners(surface, front_rect, rc, size=4)
-
-        # Containers: sprite + short description label
-        cell_w  = max(1, fw // 3)
-        sp_size = max(10, min(16, cell_w - 4))
-        for j, cont in enumerate(room.containers[:6]):
-            ccx = fx + (j % 3) * cell_w + cell_w // 2
-            ccy = fy + 14 + (j // 3) * max(1, (fh - 14) // 2)
-            pulse = lerp_color(TEAL, WHITE, (math.sin(t * 2 + j) + 1) / 4)
-            draw_sprite(surface, cont.shape, pulse, ccx, ccy, sp_size)
-            text(surface, cont.description[:7].upper(),
-                 ccx, ccy + sp_size // 2 + 3,
-                 max(6, min(8, cell_w // 5)),
-                 lerp_color(TEAL, WHITE, 0.3), "center")
+            for j, cont in enumerate(room.containers[:6]):
+                col_j = j % cols_c
+                row_j = j // cols_c
+                ccx   = ix + col_j * cell_w + cell_w // 2
+                ccy   = iy + row_j * cell_h + cell_h // 2
+                pulse = lerp_color(TEAL, WHITE, (math.sin(t * 2 + j) + 1) / 4)
+                draw_sprite(surface, cont.shape, pulse, ccx, ccy, sp_size)
+                text(surface, cont.description[:6].upper(),
+                     ccx, ccy + sp_size // 2 + 2,
+                     max(6, min(8, cell_w // 6)),
+                     lerp_color(TEAL, WHITE, 0.35), "center")
 
     # Cat
     if cat is not None and layout:
@@ -568,7 +555,6 @@ class ElementScreen(Screen):
     STAGE_DESC  = "desc"
     STAGE_SHAPE = "shape"
     STAGE_ROOM  = "room"
-    COLS = 8    # items per row in the sprite picker
 
     def __init__(self, game, element):
         super().__init__(game)
@@ -576,7 +562,8 @@ class ElementScreen(Screen):
         self.stage          = self.STAGE_INFO
         self.input_text     = ""
         self.container_desc = ""
-        self.chosen_shape   = 0
+        self.picker_col     = 0   # column in 49×22 sprite sheet (0-48)
+        self.picker_row     = 0   # row in 49×22 sprite sheet (0-21)
 
     # --- input handling ---
 
@@ -599,13 +586,13 @@ class ElementScreen(Screen):
 
                 elif self.stage == self.STAGE_SHAPE:
                     if e.key == pygame.K_RIGHT:
-                        self.chosen_shape = (self.chosen_shape + 1) % len(ITEMS)
+                        self.picker_col = (self.picker_col + 1) % TILE_COLS
                     elif e.key == pygame.K_LEFT:
-                        self.chosen_shape = (self.chosen_shape - 1) % len(ITEMS)
+                        self.picker_col = (self.picker_col - 1) % TILE_COLS
                     elif e.key == pygame.K_DOWN:
-                        self.chosen_shape = (self.chosen_shape + self.COLS) % len(ITEMS)
+                        self.picker_row = (self.picker_row + 1) % TILE_ROWS
                     elif e.key == pygame.K_UP:
-                        self.chosen_shape = (self.chosen_shape - self.COLS) % len(ITEMS)
+                        self.picker_row = (self.picker_row - 1) % TILE_ROWS
                     elif e.key == pygame.K_RETURN:
                         self.stage = self.STAGE_ROOM
                         pygame.key.start_text_input()
@@ -624,7 +611,8 @@ class ElementScreen(Screen):
 
     def _commit(self, room_name):
         from palace import Container
-        c = Container(description=self.container_desc, shape=ITEMS[self.chosen_shape])
+        name = tile_key(self.picker_col, self.picker_row)
+        c = Container(description=self.container_desc, shape=name)
         self.game.palace.store_element(self.element["name"], c, room_name)
 
     # --- drawing ---
@@ -711,43 +699,50 @@ class ElementScreen(Screen):
                  CARD_X + 10, INTERNAL_H - 30, FONT_SM, WHITE)
 
     def _draw_shape_picker(self, surface):
+        """Full 49×22 sprite sheet browser using the COLOURED sheet."""
         draw_bg(surface)
-        t    = get_t()
-        cell = 38          # cell size in internal px
-        sp   = 22          # sprite size inside cell
-        cols = self.COLS
-        rows = (len(ITEMS) + cols - 1) // cols
-        ox   = (INTERNAL_W - cols * cell) // 2
-        oy   = 32
+        t = get_t()
+
+        # --- layout ---
+        # Fit 49 cols in 640px: 640 / 49 ≈ 13 → use 12px per tile + 1px gap = 13px step
+        CELL  = 13   # pixels per cell (display)
+        TDISPLAY = 12   # tile display size within cell
+        ox    = (INTERNAL_W - TILE_COLS * CELL) // 2   # ≈ 2
+        oy    = 22   # top of grid (below header)
 
         title_c = lerp_color(GOLD, TEAL, (math.sin(t * 1.4) + 1) / 2)
-        text(surface, "CHOOSE YOUR CONTAINER", MX, 10, FONT_SM, title_c, "center")
+        text(surface, "ALL 1078 TILES  –  ARROWS TO BROWSE", MX, 8, FONT_SM - 2, title_c, "center")
 
-        for i, name in enumerate(ITEMS):
-            row, col = divmod(i, cols)
-            cx = ox + col * cell + cell // 2
-            cy = oy + row * cell + cell // 2
-            selected = (i == self.chosen_shape)
-            # Highlight selected cell
-            if selected:
-                pulse_c = lerp_color(HIGHLIGHT, GOLD, (math.sin(t * 4) + 1) / 2)
-                pygame.draw.rect(surface, pulse_c,
-                                 (cx - cell//2, cy - cell//2, cell, cell),
-                                 border_radius=3)
-            else:
-                pygame.draw.rect(surface, PANEL_BG,
-                                 (cx - cell//2, cy - cell//2, cell, cell),
-                                 border_radius=2)
-            icon_c = WHITE if selected else GRAY
-            draw_sprite(surface, name, icon_c, cx, cy, sp)
+        # Draw every tile from the coloured sheet
+        for row in range(TILE_ROWS):
+            for col in range(TILE_COLS):
+                dx = ox + col * CELL
+                dy = oy + row * CELL
+                tile = get_colored_tile(col, row, TDISPLAY)
+                surface.blit(tile, (dx, dy))
 
-        # Selected item label
-        sel_name = ITEMS[self.chosen_shape]
-        glow_border(surface, (MX - 90, INTERNAL_H - 36, 180, 20), t, GOLD, TEAL, 1)
-        text(surface, sel_name.upper(), MX, INTERNAL_H - 32,
-             FONT_SM, GOLD, "center")
-        text(surface, "ARROWS  /  ENTER TO CONFIRM",
-             MX, INTERNAL_H - 14, FONT_SM - 2, GRAY, "center")
+        # Cursor over selected tile
+        sel_dx = ox + self.picker_col * CELL - 1
+        sel_dy = oy + self.picker_row * CELL - 1
+        pulse_c = lerp_color(GOLD, WHITE, (math.sin(t * 6) + 1) / 2)
+        pygame.draw.rect(surface, pulse_c, (sel_dx, sel_dy, CELL + 1, CELL + 1), 2)
+
+        # Large preview of selected tile (bottom-right)
+        preview_size = 48
+        px_off = INTERNAL_W - preview_size - 6
+        py_off = INTERNAL_H - preview_size - 22
+        preview = get_colored_tile(self.picker_col, self.picker_row, preview_size)
+        pygame.draw.rect(surface, PANEL_BG, (px_off - 2, py_off - 2, preview_size + 4, preview_size + 4))
+        pygame.draw.rect(surface, GOLD,     (px_off - 2, py_off - 2, preview_size + 4, preview_size + 4), 1)
+        surface.blit(preview, (px_off, py_off))
+
+        # Selected tile name / position
+        name = tile_key(self.picker_col, self.picker_row)
+        label = name.replace("t_", "").replace("_", ",") if name.startswith("t_") else name.upper()
+        glow_border(surface, (2, INTERNAL_H - 36, INTERNAL_W - preview_size - 16, 20), t, GOLD, TEAL, 1)
+        text(surface, label, 10, INTERNAL_H - 32, FONT_SM, GOLD)
+        text(surface, "ARROWS · ENTER CONFIRM",
+             INTERNAL_W - preview_size - 10, INTERNAL_H - 12, FONT_SM - 2, GRAY, "topright")
 
 
 # ---------------------------------------------------------------------------
