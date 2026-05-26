@@ -19,6 +19,8 @@ class Game:
         self.canvas   = canvas
         self.elements = load_elements()
         self.palace   = Palace.load()
+        # Ensure prebuilt rooms exist (harmless on existing saves)
+        self.palace.ensure_prebuilt_rooms()
         self.screen   = None
         self.level    = 1
         from ui import Cat
@@ -32,7 +34,6 @@ class Game:
     def update(self, events):
         import ui
         self.cat.update(self.palace)
-        # Let the active screen handle events first
         if self.screen:
             result = self.screen.update(events)
             if result:
@@ -72,6 +73,7 @@ class Game:
         action = result.get("action")
         if action == "new_game":
             self.palace = Palace()
+            self.palace.ensure_prebuilt_rooms()
             self.palace.save()
             self._next_element()
         elif action == "continue":
@@ -83,13 +85,12 @@ class Game:
         elif action == "element_stored":
             self.palace.save()
             count = len(self.palace.learned)
-            # Every 5 elements: show the rooms view so the player sees their palace
             if count > 0 and count % QUIZ_INTERVAL == 0:
-                self._go_to("rooms")
+                self._go_to("quiz")          # ← quiz restored
             else:
                 self._next_element()
         elif action == "quiz_done":
-            self._next_element()
+            self._go_to("rooms")             # ← rooms view as reward after quiz
         elif action == "home":
             self._go_to("home")
         elif action == "quit":

@@ -875,24 +875,38 @@ class PalaceScreen(Screen):
 # ---------------------------------------------------------------------------
 
 class RoomsScreen(Screen):
-    """Left panel = scrollable room list. Right panel = full decorated room."""
+    """
+    Two-panel rooms browser.
+    Left: scrollable room list.
+    Right: full-screen wireframe 3D room (Manim aesthetic).
+    """
+    # Viewport for the wireframe render (right panel)
+    _VP_X = _ROOMS_PW + 4
+    _VP_Y = 4
+    _VP_W = INTERNAL_W - _ROOMS_PW - 8
+    _VP_H = INTERNAL_H - 28   # leave room for hint strip
 
     def __init__(self, game, room_idx=0):
         super().__init__(game)
+        import wireframe as wf
+        self._wf = wf
         n = len(game.palace.rooms)
         self.room_idx = max(0, min(room_idx, n - 1)) if n else 0
         self.cont_idx = 0
         self.scroll   = 0
+        self._after_quiz = False   # flag: show CONTINUE button
 
     # ---- navigation ----
 
     def update(self, events):
-        rooms  = self.game.palace.rooms
-        n      = len(rooms)
+        rooms = self.game.palace.rooms
+        n     = len(rooms)
         for e in events:
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_ESCAPE:
                     return {"action": "home"}
+                elif e.key in (pygame.K_RETURN, pygame.K_SPACE):
+                    return {"action": "continue"}
                 elif e.key in (pygame.K_UP, pygame.K_w):
                     if n:
                         self.room_idx = (self.room_idx - 1) % n
@@ -914,7 +928,7 @@ class RoomsScreen(Screen):
         return None
 
     def _fix_scroll(self, n):
-        vis = max(1, (INTERNAL_H - 20) // _ROOMS_CH)
+        vis = max(1, (INTERNAL_H - 22) // _ROOMS_CH)
         self.scroll = max(0, min(self.scroll, n - vis))
         if self.room_idx < self.scroll:
             self.scroll = self.room_idx
@@ -924,23 +938,28 @@ class RoomsScreen(Screen):
     # ---- drawing ----
 
     def draw(self, surface):
-        draw_bg(surface)
-        t = get_t()
+        # Dark Manim-style background for the right panel
+        surface.fill(BG)
+        pygame.draw.rect(surface, (4, 4, 12),
+                         (self._VP_X, self._VP_Y, self._VP_W, self._VP_H))
+
+        t     = get_t()
         rooms = self.game.palace.rooms
 
         if not rooms:
-            text(surface, "NO ROOMS YET", MX, MY - 10, FONT_MD, GOLD, "center")
-            text(surface, "ADD AN ELEMENT FIRST THEN COME BACK",
-                 MX, MY + 20, FONT_SM, GRAY, "center")
-            text(surface, "ESC = HOME", MX, INTERNAL_H - 14, FONT_SM, GRAY, "center")
+            text(surface, "NO ROOMS YET — ADD AN ELEMENT FIRST",
+                 MX, MY, FONT_SM, GRAY, "center")
+            text(surface, "ESC HOME", MX, INTERNAL_H - 12, FONT_SM - 2, GRAY, "center")
             draw_scanlines(surface)
             return
 
         self._draw_left(surface, rooms, t)
-        self._draw_right(surface, rooms, t)
+        self._draw_wireframe(surface, rooms, t)
+        self._draw_containers_overlay(surface, rooms, t)
+        self._draw_hints(surface, t)
         draw_scanlines(surface)
 
-    # ---- left panel: room list ----
+    # ---- left panel ----
 
     def _draw_left(self, surface, rooms, t):
         pygame.draw.rect(surface, PANEL_BG, (0, 0, _ROOMS_PW, INTERNAL_H))
@@ -957,116 +976,108 @@ class RoomsScreen(Screen):
             sel  = (i == self.room_idx)
             ry   = 20 + slot * _ROOMS_CH
             rc   = room_color(room.name)
-            bg   = lerp_color(rc, BG, 0.60) if sel else lerp_color(rc, BG, 0.84)
+            bg   = lerp_color(rc, BG, 0.55) if sel else lerp_color(rc, BG, 0.84)
             pygame.draw.rect(surface, bg, (3, ry, _ROOMS_PW - 6, _ROOMS_CH - 3),
                              border_radius=3)
-            bw   = 2 if sel else 1
-            bc   = lerp_color(GOLD, WHITE, (math.sin(t * 5) + 1) / 2) if sel \
-                   else lerp_color(rc, BG, 0.35)
+            bw = 2 if sel else 1
+            bc = lerp_color(GOLD, WHITE, (math.sin(t * 5) + 1) / 2) if sel \
+                 else lerp_color(rc, BG, 0.35)
             pygame.draw.rect(surface, bc, (3, ry, _ROOMS_PW - 6, _ROOMS_CH - 3),
                              bw, border_radius=3)
-            # Room name
             nc_col = GOLD if sel else lerp_color(rc, WHITE, 0.80)
             text(surface, room.name.upper()[:16], 8, ry + 5,
                  max(6, FONT_SM - 2), nc_col)
-            # Tiny container sprites (up to 4)
             for j, cont in enumerate(room.containers[:4]):
-                draw_sprite(surface, cont.shape,
-                            lerp_color(rc, WHITE, 0.55),
+                draw_sprite(surface, cont.shape, lerp_color(rc, WHITE, 0.55),
                             10 + j * 16, ry + _ROOMS_CH - 10, 11)
-            # Count
             nc = len(room.containers)
             if nc:
                 text(surface, str(nc), _ROOMS_PW - 8, ry + 5,
                      max(5, FONT_SM - 3), GRAY, "topright")
 
-    # ---- right panel: full decorated room ----
+    # ---- wireframe right panel ----
 
-    def _draw_right(self, surface, rooms, t):
+    def _draw_wireframe(self, surface, rooms, t):
+        if self.room_idx >= len(rooms):
+            return
+        room      = rooms[self.room_idx]
+        rt        = room.room_type or ""
+        wire_room = self._wf.get_room(rt)
+        if wire_room is None:
+            # Custom / unknown room type — fall back to a label
+            rc = room_color(room.name)
+            cx = self._VP_X + self._VP_W // 2
+            cy = self._VP_Y + self._VP_H // 2
+            text(surface, room.name.upper(), cx, cy - 10, FONT_MD,
+                 lerp_color(rc, WHITE, 0.7), "center")
+            text(surface, "CUSTOM ROOM", cx, cy + 14, FONT_SM, GRAY, "center")
+            return
+
+        # Which slots are occupied?
+        occupied = {cont.description.split()[0].lower()
+                    for cont in room.containers}
+        wire_room.draw(surface, t,
+                       vp_x=self._VP_X, vp_y=self._VP_Y,
+                       vp_w=self._VP_W, vp_h=self._VP_H,
+                       active_slots=occupied)
+
+        # Room name at top of viewport
+        rc = (wire_room.ROOM_COLOR[0]//2 + 128,
+              wire_room.ROOM_COLOR[1]//2 + 128,
+              wire_room.ROOM_COLOR[2]//2 + 128)
+        text(surface, wire_room.NAME.upper(),
+             self._VP_X + self._VP_W // 2, self._VP_Y + 6,
+             FONT_MD, rc, "center")
+
+    # ---- container sprites overlaid on wireframe ----
+
+    def _draw_containers_overlay(self, surface, rooms, t):
         if self.room_idx >= len(rooms):
             return
         room = rooms[self.room_idx]
-        rc   = room_color(room.name)
+        if not room.containers:
+            return
+        rt        = room.room_type or ""
+        wire_room = self._wf.get_room(rt)
 
-        # Room bounds — fills the right side with a thin margin
-        rx = _ROOMS_PW + 4
-        ry = 4
-        rw = INTERNAL_W - rx - 4
-        rh = INTERNAL_H - 8 - 20       # 20px hint strip at bottom
-
-        ix, iy, iw, ih = draw_topdown_room(
-            surface, rx, ry, rw, rh, rc, room.name, t, highlighted=False)
-
-        # 4 ambient furniture sprites at room corners
-        self._draw_corner_decos(surface, room.name, rc, ix, iy, iw, ih)
-
-        # Containers (in the centre, clear of corner decos)
-        if room.containers and iw > 40 and ih > 40:
-            self._draw_containers(surface, room, rc, ix, iy, iw, ih, t)
-        elif not room.containers:
-            text(surface, "EMPTY ROOM", rx + rw // 2, iy + ih // 2,
-                 FONT_SM, lerp_color(rc, BG, 0.40), "center")
-
-        # Hint strip
-        text(surface,
-             "W / S  ROOM     < >  CONTAINER     ESC  HOME",
-             rx + rw // 2, INTERNAL_H - 12, FONT_SM - 2, GRAY, "center")
-
-    def _draw_corner_decos(self, surface, room_name, rc, ix, iy, iw, ih):
-        h     = sum(ord(c) for c in room_name.lower())
-        dset  = DECO_SETS[h % len(DECO_SETS)]
-        col   = lerp_color(rc, WHITE, 0.45)
-        sz    = 20
-        pad   = sz // 2 + 5
-        corners = [
-            (ix + pad,        iy + pad),          # TL
-            (ix + iw - pad,   iy + pad),          # TR
-            (ix + pad,        iy + ih - pad),     # BL
-            (ix + iw - pad,   iy + ih - pad),     # BR
-        ]
-        for k, (dx, dy) in enumerate(corners):
-            draw_sprite(surface, dset[k], col, dx, dy, sz)
-
-    def _draw_containers(self, surface, room, rc, ix, iy, iw, ih, t):
         conts  = room.containers
         n      = len(conts)
-        # Push containers toward centre to avoid overlapping corner decos
-        mg     = 38
-        cix, ciw = ix + mg, iw - mg * 2
-        ciy, cih = iy + mg, ih - mg * 2
-        if ciw < 10 or cih < 10:
-            return
-        cols_c = min(5, n)
-        rows_c = (n + cols_c - 1) // cols_c
-        cell_w = max(1, ciw // cols_c)
-        cell_h = max(1, cih // rows_c)
-        sp_sz  = max(20, min(32, min(cell_w, cell_h) - 16))
+        # Lay out containers in a row near the bottom of the viewport
+        cy_base = self._VP_Y + self._VP_H - 44
+        cell_w  = min(80, self._VP_W // max(n, 1))
+        start_x = self._VP_X + (self._VP_W - cell_w * n) // 2
 
         for j, cont in enumerate(conts):
-            ccx = cix + (j % cols_c) * cell_w + cell_w // 2
-            ccy = ciy + (j // cols_c) * cell_h + max(sp_sz, cell_h // 3)
+            ccx = start_x + j * cell_w + cell_w // 2
             sel = (j == self.cont_idx)
-
-            # Sprite
-            pulse   = lerp_color(TEAL, WHITE, (math.sin(t * 2 + j) + 1) / 4)
+            sp_sz = 22 if sel else 18
+            pulse = lerp_color(TEAL, WHITE, (math.sin(t * 2 + j) + 1) / 4)
             spr_col = lerp_color(GOLD, WHITE, 0.30) if sel else pulse
-            draw_sprite(surface, cont.shape, spr_col, ccx, ccy, sp_sz)
-
-            # Gold selection box
+            draw_sprite(surface, cont.shape, spr_col, ccx, cy_base, sp_sz)
             if sel:
-                bsz = sp_sz + 6
-                pc  = lerp_color(GOLD, WHITE, (math.sin(t * 6) + 1) / 2)
+                pc = lerp_color(GOLD, WHITE, (math.sin(t * 6) + 1) / 2)
                 pygame.draw.rect(surface, pc,
-                                 (ccx - bsz // 2, ccy - bsz // 2, bsz, bsz),
-                                 1, border_radius=2)
-
-            # Description + element names
-            dy = ccy + sp_sz // 2 + 4
-            text(surface, cont.description[:14].upper(),
+                                 (ccx - sp_sz//2 - 2, cy_base - sp_sz//2 - 2,
+                                  sp_sz + 4, sp_sz + 4), 1, border_radius=2)
+            dy = cy_base + sp_sz // 2 + 4
+            text(surface, cont.description[:10].upper(),
                  ccx, dy, max(5, FONT_SM - 2), GOLD if sel else TEAL, "center")
-            for k, el in enumerate(cont.elements[:3]):
-                text(surface, el[:12].upper(),
-                     ccx, dy + 10 + k * 9, max(4, FONT_SM - 3), WHITE, "center")
+            for k, el in enumerate(cont.elements[:2]):
+                text(surface, el[:10].upper(), ccx, dy + 9 + k * 8,
+                     max(4, FONT_SM - 3), WHITE, "center")
+
+    # ---- hint bar ----
+
+    def _draw_hints(self, surface, t):
+        hint_y = INTERNAL_H - 14
+        # CONTINUE button (prominent after quiz)
+        cont_c = lerp_color(GOLD, WHITE, (math.sin(t * 4) + 1) / 2)
+        text(surface, "ENTER CONTINUE",
+             self._VP_X + self._VP_W // 2, hint_y,
+             FONT_SM - 2, cont_c, "center")
+        text(surface, "W/S ROOM  < > CONTAINER  ESC HOME",
+             self._VP_X + self._VP_W // 2, hint_y - 10,
+             max(5, FONT_SM - 3), GRAY, "center")
 
 
 # ---------------------------------------------------------------------------

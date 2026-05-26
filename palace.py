@@ -24,6 +24,7 @@ class Container:
 class Room:
     name: str
     containers: List[Container] = field(default_factory=list)
+    room_type: str = ""          # "kitchen" | "bedroom" | "garage" | "" for custom
 
     def add_container(self, container: Container):
         self.containers.append(container)
@@ -72,6 +73,14 @@ class Palace:
         with open(SAVE_PATH, "w") as f:
             json.dump(asdict(self), f, indent=2)
 
+    def ensure_prebuilt_rooms(self):
+        """Add the three prebuilt rooms if they don't already exist."""
+        from wireframe import PREBUILT_NAMES
+        existing = {r.room_type for r in self.rooms}
+        for rt in PREBUILT_NAMES:
+            if rt not in existing:
+                self.rooms.append(Room(name=rt.capitalize(), room_type=rt))
+
     @classmethod
     def load(cls) -> "Palace":
         if not os.path.exists(SAVE_PATH):
@@ -80,7 +89,7 @@ class Palace:
             data = json.load(f)
         palace = cls(learned=data.get("learned", []))
         for r in data.get("rooms", []):
-            room = Room(name=r["name"])
+            room = Room(name=r["name"], room_type=r.get("room_type", ""))
             for c in r.get("containers", []):
                 room.containers.append(Container(**c))
             palace.rooms.append(room)
