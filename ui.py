@@ -671,6 +671,15 @@ class ElementScreen(Screen):
                         return {"action": "element_stored"}
                     elif e.key == pygame.K_BACKSPACE:
                         self.input_text = self.input_text[:-1]
+                    elif e.key == pygame.K_1:
+                        self._commit("kitchen")
+                        return {"action": "element_stored"}
+                    elif e.key == pygame.K_2:
+                        self._commit("bedroom")
+                        return {"action": "element_stored"}
+                    elif e.key == pygame.K_3:
+                        self._commit("garage")
+                        return {"action": "element_stored"}
 
             elif e.type == pygame.TEXTINPUT:
                 if self.stage in (self.STAGE_DESC, self.STAGE_ROOM):
@@ -690,19 +699,14 @@ class ElementScreen(Screen):
         if self.stage == self.STAGE_SHAPE:
             self._draw_shape_picker(surface)
         else:
-            self._draw_left_palace(surface)
             self._draw_right_card(surface)
         draw_scanlines(surface)
 
-    def _draw_left_palace(self, surface):
-        panel(surface, (2, 2, PALACE_W, INTERNAL_H - 4))
-        text(surface, "PALACE", PALACE_W // 2, 8, FONT_SM, GOLD, "center")
-        if not self.game.palace.rooms:
-            text(surface, "EMPTY", PALACE_W // 2, MY, FONT_SM - 2, GRAY, "center")
-        else:
-            draw_palace_panel(surface, self.game.palace, self.game.cat, MINI, 2, 2)
-
     def _draw_right_card(self, surface):
+        # Full-screen card — no palace mini-panel any more
+        CX = 4
+        CW = INTERNAL_W - 8
+        CC = INTERNAL_W // 2   # horizontal centre
         el   = self.element
         t    = get_t()
         cat  = el["category"]
@@ -710,40 +714,40 @@ class ElementScreen(Screen):
 
         # Panel background
         pygame.draw.rect(surface, PANEL_BG,
-                         (CARD_X, 2, CARD_W, INTERNAL_H - 4), border_radius=4)
+                         (CX, 2, CW, INTERNAL_H - 4), border_radius=4)
 
         # Coloured header strip
         pygame.draw.rect(surface, lerp_color(cc, BG, 0.6),
-                         (CARD_X, 2, CARD_W, 46), border_radius=4)
+                         (CX, 2, CW, 46), border_radius=4)
 
         # Animated glow border keyed to category colour
-        glow_border(surface, (CARD_X, 2, CARD_W, INTERNAL_H - 4), t, cc,
+        glow_border(surface, (CX, 2, CW, INTERNAL_H - 4), t, cc,
                     lerp_color(cc, WHITE, 0.5))
-        pixel_corners(surface, (CARD_X, 2, CARD_W, INTERNAL_H - 4), cc, size=6)
+        pixel_corners(surface, (CX, 2, CW, INTERNAL_H - 4), cc, size=6)
 
         # Element info
-        text(surface, el["name"].upper(), CARD_CX, 10, FONT_LG, WHITE, "center")
-        text(surface, el["symbol"],       CARD_X + 8, 10, FONT_LG, cc)
-        text(surface, f"#{el['number']}", CARD_X + CARD_W - 8, 10,
+        text(surface, el["name"].upper(), CC, 10, FONT_LG, WHITE, "center")
+        text(surface, el["symbol"],       CX + 8, 10, FONT_LG, cc)
+        text(surface, f"#{el['number']}", CX + CW - 8, 10,
              FONT_MD, GRAY, "topright")
 
         # Divider
         pygame.draw.line(surface, lerp_color(cc, BG, 0.4),
-                         (CARD_X + 6, 50), (CARD_X + CARD_W - 6, 50), 1)
+                         (CX + 6, 50), (CX + CW - 6, 50), 1)
 
         text(surface, f"GROUP {el['group']}   PERIOD {el['period']}",
-             CARD_CX, 56, FONT_SM, WHITE, "center")
-        text(surface, f"MASS  {el['mass']}", CARD_CX, 76, FONT_SM, GRAY, "center")
-        text(surface, cat.upper(), CARD_CX, 96, FONT_SM, cc, "center")
+             CC, 56, FONT_SM, WHITE, "center")
+        text(surface, f"MASS  {el['mass']}", CC, 76, FONT_SM, GRAY, "center")
+        text(surface, cat.upper(), CC, 96, FONT_SM, cc, "center")
 
         # Properties
         for i, prop in enumerate(el["properties"][:2]):
-            wrap_text(surface, prop, CARD_X + 10, 120 + i * 38,
-                      CARD_W - 20, FONT_SM, WHITE, 20)
+            wrap_text(surface, prop, CX + 10, 120 + i * 38,
+                      CW - 20, FONT_SM, WHITE, 20)
 
         # Animated atomic number orbiting decoration
         angle = t * 1.5
-        ox = CARD_X + CARD_W - 22
+        ox = CX + CW - 22
         oy = 80
         for orbit_r, orbit_speed, orbit_col in [
             (10, 1.5, cc), (15, -1.0, lerp_color(cc, WHITE, 0.5))
@@ -755,16 +759,21 @@ class ElementScreen(Screen):
         # Stage-specific bottom section
         if self.stage == self.STAGE_INFO:
             text(surface, "ENTER TO CONTINUE",
-                 CARD_CX, INTERNAL_H - 18, FONT_SM, GRAY, "center")
+                 CC, INTERNAL_H - 18, FONT_SM, GRAY, "center")
         elif self.stage in (self.STAGE_DESC, self.STAGE_ROOM):
             label = ("WHAT IS YOUR CONTAINER?"
                      if self.stage == self.STAGE_DESC
                      else "PLACE IN WHICH ROOM?")
-            text(surface, label, CARD_X + 8, INTERNAL_H - 52, FONT_SM, GOLD)
-            glow_border(surface, (CARD_X + 4, INTERNAL_H - 34, CARD_W - 8, 26),
+            text(surface, label, CX + 8, INTERNAL_H - 64, FONT_SM, GOLD)
+            glow_border(surface, (CX + 4, INTERNAL_H - 46, CW - 8, 26),
                         t, GOLD, TEAL, width=1)
-            text(surface, (self.input_text + "_")[:34],
-                 CARD_X + 10, INTERNAL_H - 30, FONT_SM, WHITE)
+            text(surface, (self.input_text + "_")[:54],
+                 CX + 10, INTERNAL_H - 42, FONT_SM, WHITE)
+            if self.stage == self.STAGE_ROOM:
+                # Quick-pick hints for prebuilt rooms
+                hint_c = lerp_color(GRAY, WHITE, 0.4)
+                text(surface, "1=KITCHEN   2=BEDROOM   3=GARAGE",
+                     CC, INTERNAL_H - 16, FONT_SM - 2, hint_c, "center")
 
     def _draw_shape_picker(self, surface):
         """Full 49×22 sprite sheet browser using the COLOURED sheet."""
