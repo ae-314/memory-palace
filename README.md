@@ -1,7 +1,5 @@
 # Memory Palace
-
-A chunky-pixel Pygame game for memorising the periodic table using the memory palace technique.
-
+Memory Palace (Periodic Table Edition) - Memorize the Periodic Table of Elements by building your own Memory Palace. Choose containers and rooms to store the elements you discover, and then try to recall the elements later via flashcard multiple choice quiz, or just go through the card deck. 
 ## Setup
 
 ```bash
