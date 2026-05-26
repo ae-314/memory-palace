@@ -4,10 +4,10 @@ All magic values live here — nothing else imports magic numbers.
 """
 
 # --- Resolution ---
-INTERNAL_W  = 320
-INTERNAL_H  = 240
-SCALE       = 3
-WINDOW_W    = INTERNAL_W * SCALE   # 960
+INTERNAL_W  = 640
+INTERNAL_H  = 360
+SCALE       = 2
+WINDOW_W    = INTERNAL_W * SCALE   # 1280
 WINDOW_H    = INTERNAL_H * SCALE   # 720
 FPS         = 60
 TITLE       = "MEMORY PALACE"
@@ -30,9 +30,9 @@ PINK        = (220, 100, 160)
 # --- Fonts ---
 FONT_DIR    = "assets/fonts"
 PIXEL_FONT  = f"{FONT_DIR}/PressStart2P.ttf"
-FONT_SM     = 6
-FONT_MD     = 8
-FONT_LG     = 12
+FONT_SM     = 12
+FONT_MD     = 16
+FONT_LG     = 28
 
 # --- Gameplay ---
 QUIZ_INTERVAL   = 5    # elements between quiz rounds

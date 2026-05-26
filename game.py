@@ -4,7 +4,9 @@ Owns the active screen, player progress, and quiz scheduling.
 Delegates all rendering to ui.py and all persistence to palace.py.
 """
 
+import sys
 import random
+import pygame
 from elements import load_elements
 from palace import Palace
 from constants import QUIZ_INTERVAL
@@ -19,6 +21,8 @@ class Game:
         self.palace   = Palace.load()
         self.screen   = None          # active Screen instance (set by _go_to)
         self.level    = 1             # current difficulty level (1-3)
+        from ui import Cat
+        self.cat = Cat()
         self._go_to("home")
 
     # ------------------------------------------------------------------
@@ -26,6 +30,15 @@ class Game:
     # ------------------------------------------------------------------
 
     def update(self, events):
+        import ui
+        # Global ESC: save palace and return to home from any gameplay screen
+        for e in events:
+            if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
+                if not isinstance(self.screen, ui.HomeScreen):
+                    self.palace.save()
+                    self._go_to("home")
+                    return
+        self.cat.update(self.palace)
         if self.screen:
             result = self.screen.update(events)
             if result:
@@ -59,7 +72,7 @@ class Game:
         if action == "new_game":
             self._next_element()
         elif action == "continue":
-            self._go_to("palace")
+            self._next_element()
         elif action == "flashcard":
             self._go_to("flashcard")
         elif action == "element_stored":
@@ -73,6 +86,10 @@ class Game:
             self._next_element()
         elif action == "home":
             self._go_to("home")
+        elif action == "quit":
+            self.palace.save()
+            pygame.quit()
+            sys.exit()
 
     def _next_element(self):
         """Pick a random unlearned element and show its card."""
